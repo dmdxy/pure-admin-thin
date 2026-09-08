@@ -3,6 +3,9 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    // Vite native configLoader 要求相对路径带扩展名；配合 tsc --noEmit
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "strict": false,
     "strictFunctionTypes": false,
     "noImplicitThis": true,
@@ -17,19 +20,12 @@
     "sourceMap": true,
     "allowJs": false,
     "resolveJsonModule": true,
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
+    "lib": ["ESNext", "DOM"],
     // TypeScript 6：baseUrl 已弃用，路径前缀写入 paths
     // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-6-0.html
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@build/*": [
-        "./build/*"
-      ]
+      "@/*": ["./src/*"],
+      "@build/*": ["./build/*"]
     },
     "types": [
       "node",
@@ -48,9 +44,5 @@
     "types/*.d.ts",
     "vite.config.ts"
   ],
-  "exclude": [
-    "dist",
-    "**/*.js",
-    "node_modules"
-  ]
+  "exclude": ["dist", "**/*.js", "node_modules"]
 }

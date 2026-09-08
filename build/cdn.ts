@@ -24,11 +24,12 @@ export const cdn = importToCDN({
       var: "VueI18n",
       path: "vue-i18n.runtime.global.prod.min.js"
     },
-    // Pinia 3 面向 Vue 3，不再依赖 vue-demi；CDN 列表也无需再引入 vue-demi
+    // Pinia 4：需配合 @vue/devtools-api；IIFE 仍可用（dist: pinia.iife.prod.js）
+    // 默认未开启 VITE_CDN；若启用 CDN，请确认对应 CDN 源文件名是否可用
     {
       name: "pinia",
       var: "Pinia",
-      path: "pinia.iife.min.js"
+      path: "pinia.iife.prod.js"
     },
     {
       name: "element-plus",

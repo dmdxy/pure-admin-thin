@@ -1,20 +1,24 @@
 {
   "*.{js,jsx,ts,tsx}": [
-    "prettier --cache --ignore-unknown  --write",
-    "eslint --cache --fix"
+    "node ./node_modules/prettier/bin/prettier.cjs --cache --ignore-unknown --write",
+    "node ./node_modules/eslint/bin/eslint.js --cache --fix"
   ],
   "{!(package)*.json,*.code-snippets,.!({browserslist,npm,nvm})*rc}": [
-    "prettier --cache --write--parser json"
+    "node ./node_modules/prettier/bin/prettier.cjs --cache --write --parser json"
   ],
-  "package.json": ["prettier --cache --write"],
+  "package.json": [
+    "node ./node_modules/prettier/bin/prettier.cjs --cache --write"
+  ],
   "*.vue": [
-    "prettier --write",
-    "eslint --cache --fix",
-    "stylelint --fix --allow-empty-input"
+    "node ./node_modules/prettier/bin/prettier.cjs --write",
+    "node ./node_modules/eslint/bin/eslint.js --cache --fix",
+    "node ./node_modules/stylelint/bin/stylelint.mjs --fix --allow-empty-input"
   ],
   "*.{css,scss,html}": [
-    "prettier --cache --ignore-unknown --write",
-    "stylelint --fix --allow-empty-input"
+    "node ./node_modules/prettier/bin/prettier.cjs --cache --ignore-unknown --write",
+    "node ./node_modules/stylelint/bin/stylelint.mjs --fix --allow-empty-input"
   ],
-  "*.md": ["prettier --cache --ignore-unknown --write"]
+  "*.md": [
+    "node ./node_modules/prettier/bin/prettier.cjs --cache --ignore-unknown --write"
+  ]
 }
