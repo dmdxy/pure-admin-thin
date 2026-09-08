@@ -3,6 +3,7 @@
   "version": "6.2.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.26.0",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=4096 vite",
     "serve": "pnpm dev",
@@ -133,32 +134,5 @@
   "engines": {
     "node": "^20.19.0 || >=22.13.0",
     "pnpm": ">=9"
-  },
-  "pnpm": {
-    "allowedDeprecatedVersions": {
-      "are-we-there-yet": "*",
-      "sourcemap-codec": "*",
-      "lodash.isequal": "*",
-      "domexception": "*",
-      "w3c-hr-time": "*",
-      "inflight": "*",
-      "npmlog": "*",
-      "rimraf": "*",
-      "stable": "*",
-      "gauge": "*",
-      "abab": "*",
-      "glob": "*"
-    },
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "core-js",
-      "es5-ext",
-      "esbuild",
-      "typeit",
-      "vue-demi"
-    ],
-    "ignoredBuiltDependencies": [
-      "@tailwindcss/oxide"
-    ]
   }
 }
