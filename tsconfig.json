@@ -15,19 +15,20 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "allowJs": false,
     "resolveJsonModule": true,
     "lib": [
       "ESNext",
       "DOM"
     ],
+    // TypeScript 6：baseUrl 已弃用，路径前缀写入 paths
+    // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-6-0.html
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@build/*": [
-        "build/*"
+        "./build/*"
       ]
     },
     "types": [
