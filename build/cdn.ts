@@ -24,12 +24,7 @@ export const cdn = importToCDN({
       var: "VueI18n",
       path: "vue-i18n.runtime.global.prod.min.js"
     },
-    // 项目中没有直接安装vue-demi，但是pinia用到了，所以需要在引入pinia前引入vue-demi（https://github.com/vuejs/pinia/blob/v2/packages/pinia/package.json#L77）
-    {
-      name: "vue-demi",
-      var: "VueDemi",
-      path: "index.iife.min.js"
-    },
+    // Pinia 3 面向 Vue 3，不再依赖 vue-demi；CDN 列表也无需再引入 vue-demi
     {
       name: "pinia",
       var: "Pinia",
