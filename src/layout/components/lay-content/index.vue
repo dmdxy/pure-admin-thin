@@ -121,6 +121,7 @@ const transitionMain = defineComponent({
               :wrap-style="{
                 display: 'flex',
                 'flex-wrap': 'wrap',
+                width: '100%',
                 'max-width': getMainWidth,
                 margin: '0 auto',
                 transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)'
@@ -128,6 +129,8 @@ const transitionMain = defineComponent({
               :view-style="{
                 display: 'flex',
                 flex: 'auto',
+                width: '100%',
+                height: '100%',
                 overflow: 'hidden',
                 'flex-direction': 'column'
               }"
@@ -138,7 +141,7 @@ const transitionMain = defineComponent({
               >
                 <BackTopIcon />
               </el-backtop>
-              <div class="grow">
+              <div class="page-stage">
                 <transitionMain :route="route">
                   <keep-alive
                     v-if="isKeepAlive"
@@ -162,7 +165,7 @@ const transitionMain = defineComponent({
               </div>
               <LayFooter v-if="!hideFooter" />
             </el-scrollbar>
-            <div v-else class="grow">
+            <div v-else class="page-stage">
               <transitionMain :route="route">
                 <keep-alive
                   v-if="isKeepAlive"
@@ -197,9 +200,36 @@ const transitionMain = defineComponent({
 <style scoped>
 .app-main {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+.app-main :deep(.el-scrollbar) {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.app-main :deep(.el-scrollbar__wrap) {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-main :deep(.el-scrollbar__view) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .app-main-nofixed-header {
@@ -209,7 +239,28 @@ const transitionMain = defineComponent({
   width: 100%;
 }
 
+.page-stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .main-content {
-  margin: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding: var(--pure-page-gap);
+  margin: 0;
+  overflow: hidden;
 }
 </style>

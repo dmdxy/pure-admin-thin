@@ -14,6 +14,19 @@ html.dark {
   /* switch关闭状态下的color 需要时可取用 */
   --pure-switch-off-color: #ffffff3f;
 
+  /* 深色模式改写导航变量。必须 !important：setLayoutThemeColor 会把同名变量写到 html 内联 style */
+  --pure-menu-background: var(--el-bg-color) !important;
+  --pure-menu-text-color: var(--el-text-color-regular) !important;
+  --pure-theme-menu-bg: var(--el-bg-color) !important;
+  --pure-theme-sub-menu-bg: var(--el-bg-color) !important;
+  --pure-theme-sidebar-logo: var(--el-bg-color) !important;
+  --pure-theme-menu-text: rgb(255 255 255 / 65%) !important;
+  --pure-theme-menu-title-hover: #fff;
+  --pure-theme-menu-hover: rgb(255 255 255 / 12%);
+  --pure-theme-sub-menu-active-text: var(--el-color-primary);
+  --pure-theme-menu-active-before: var(--el-color-primary);
+  --pure-theme-logo-title: rgb(255 255 255 / 85%);
+
   .navbar,
   .tags-view,
   .contextmenu,
@@ -23,6 +36,41 @@ html.dark {
   .horizontal-header .el-sub-menu__title,
   .horizontal-header .submenu-title-noDropdown {
     background: var(--el-bg-color) !important;
+  }
+
+  /* 顶栏按钮深色适配 */
+  .header-action-btn,
+  .set-icon,
+  .fullscreen-icon,
+  .search-container,
+  .dropdown-badge {
+    color: rgb(255 255 255 / 75%) !important;
+
+    svg,
+    .iconify,
+    .header-notice-icon {
+      color: inherit !important;
+    }
+
+    &:hover {
+      color: #fff !important;
+      background: rgb(255 255 255 / 12%) !important;
+    }
+  }
+
+  /* 顶栏用户头像按钮深色适配 */
+  .header-user-btn {
+    &:hover {
+      background: rgb(255 255 255 / 12%) !important;
+    }
+  }
+
+  /* 暗色下弹出层/折叠菜单也跟侧栏同色 */
+  .el-menu--popup,
+  .el-popper .el-menu--vertical,
+  .el-menu--vertical .el-menu--popup,
+  .el-menu--horizontal .el-menu--popup {
+    background-color: var(--el-bg-color) !important;
   }
 
   .app-main,

@@ -13,28 +13,55 @@ import { darken, lighten, useGlobal, storageLocal } from "@pureadmin/utils";
 export function useDataThemeChange() {
   const { layoutTheme, layout } = useLayout();
   const themeColors = ref<Array<themeColorsType>>([
-    /* 亮白色 */
-    { color: "#ffffff", themeColor: "light" },
-    /* 道奇蓝 */
-    { color: "#1b2a47", themeColor: "default" },
-    /* 深紫罗兰色 */
-    { color: "#722ed1", themeColor: "saucePurple" },
-    /* 深粉色 */
-    { color: "#eb2f96", themeColor: "pink" },
-    /* 猩红色 */
-    { color: "#f5222d", themeColor: "dusk" },
-    /* 橙红色 */
-    { color: "#fa541c", themeColor: "volcano" },
-    /* 绿宝石 */
-    { color: "#13c2c2", themeColor: "mingQing" },
-    /* 酸橙绿 */
-    { color: "#52c41a", themeColor: "auroraGreen" }
+    /* 测绘蓝 */
+    {
+      themeColor: "light",
+      menuBackground: "#ffffff",
+      primaryColor: "#034EA2",
+      menuTextColor: "#475569"
+    },
+    /* 天空蓝 */
+    {
+      themeColor: "sky",
+      menuBackground: "#ffffff",
+      primaryColor: "#0284C7",
+      menuTextColor: "#475569"
+    },
+    /* 水色青 */
+    {
+      themeColor: "saucePurple",
+      menuBackground: "#ffffff",
+      primaryColor: "#0F766E",
+      menuTextColor: "#475569"
+    },
+    /* 地形绿 */
+    {
+      themeColor: "pink",
+      menuBackground: "#ffffff",
+      primaryColor: "#15803D",
+      menuTextColor: "#475569"
+    },
+    /* 海图藏青 */
+    {
+      themeColor: "dusk",
+      menuBackground: "#ffffff",
+      primaryColor: "#1E3A5F",
+      menuTextColor: "#475569"
+    },
+    /* 岩石灰 */
+    {
+      themeColor: "volcano",
+      menuBackground: "#ffffff",
+      primaryColor: "#57534E",
+      menuTextColor: "#475569"
+    }
   ]);
 
   const { $storage } = useGlobal<GlobalPropertiesApi>();
   const dataTheme = ref<boolean>($storage?.layout?.darkMode);
   const overallStyle = ref<string>($storage?.layout?.overallStyle);
   const body = document.documentElement as HTMLElement;
+  const defaultThemeColor = themeColors.value[0].themeColor;
 
   function toggleClass(flag: boolean, clsName: string, target?: HTMLElement) {
     const targetEl = target || document.body;
@@ -43,31 +70,52 @@ export function useDataThemeChange() {
     targetEl.className = flag ? `${className} ${clsName}` : className;
   }
 
+  /** 无效或旧 key（如 default）一律回退到第一个主题色 */
+  function resolveThemeColor(theme?: string) {
+    return (
+      themeColors.value.find(item => item.themeColor === theme) ??
+      themeColors.value[0]
+    );
+  }
+
   /** 设置导航主题色 */
   function setLayoutThemeColor(
-    theme = getConfig().Theme ?? "light",
+    theme = getConfig().Theme ?? defaultThemeColor,
     isClick = true
   ) {
-    layoutTheme.value.theme = theme;
-    document.documentElement.setAttribute("data-theme", theme);
-    // 如果非isClick，保留之前的themeColor
-    const storageThemeColor = $storage.layout.themeColor;
+    const currentTheme = resolveThemeColor(
+      isClick ? theme : ($storage.layout?.themeColor ?? theme)
+    );
+    const themeKey = currentTheme.themeColor;
+    const activeTextColor = currentTheme.primaryColor;
+
+    layoutTheme.value.theme = themeKey;
+    document.documentElement.setAttribute("data-theme", themeKey);
+    document.documentElement.style.setProperty(
+      "--pure-menu-background",
+      dataTheme.value ? "var(--el-bg-color)" : currentTheme.menuBackground
+    );
+    document.documentElement.style.setProperty(
+      "--pure-menu-text-color",
+      dataTheme.value
+        ? "var(--el-text-color-regular)"
+        : currentTheme.menuTextColor
+    );
+    document.documentElement.style.setProperty(
+      "--pure-menu-active-text-color",
+      activeTextColor
+    );
     $storage.layout = {
       layout: layout.value,
-      theme,
+      theme: themeKey,
       darkMode: dataTheme.value,
       sidebarStatus: $storage.layout?.sidebarStatus,
       epThemeColor: $storage.layout?.epThemeColor,
-      themeColor: isClick ? theme : storageThemeColor,
+      themeColor: themeKey,
       overallStyle: overallStyle.value
     };
 
-    if (theme === "default" || theme === "light") {
-      setEpThemeColor(getConfig().EpThemeColor);
-    } else {
-      const colors = themeColors.value.find(v => v.themeColor === theme);
-      setEpThemeColor(colors.color);
-    }
+    setEpThemeColor(currentTheme.primaryColor);
   }
 
   function setPropertyPrimary(mode: string, i: number, color: string) {
@@ -92,18 +140,17 @@ export function useDataThemeChange() {
   /** 浅色、深色整体风格切换 */
   function dataThemeChange(overall?: string) {
     overallStyle.value = overall;
-    if (useEpThemeStoreHook().epTheme === "light" && dataTheme.value) {
-      setLayoutThemeColor("default", false);
-    } else {
-      setLayoutThemeColor(useEpThemeStoreHook().epTheme, false);
-    }
+    // 配色与明暗模式独立；缺省或旧 key 回退到第一个主题色
+    setLayoutThemeColor(
+      $storage.layout?.themeColor ??
+        layoutTheme.value.theme ??
+        defaultThemeColor,
+      false
+    );
 
     if (dataTheme.value) {
       document.documentElement.classList.add("dark");
     } else {
-      if ($storage.layout.themeColor === "light") {
-        setLayoutThemeColor("light", false);
-      }
       document.documentElement.classList.remove("dark");
     }
   }

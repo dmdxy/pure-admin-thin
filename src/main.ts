@@ -1,13 +1,14 @@
 import App from "./App.vue";
 import router from "./router";
 import { setupStore } from "@/store";
-import { useI18n } from "@/plugins/i18n";
+import { useI18n, i18n } from "@/plugins/i18n";
 import { getPlatformConfig } from "./config";
 import { MotionPlugin } from "@vueuse/motion";
 // import { useEcharts } from "@/plugins/echarts";
 import { createApp, type Directive } from "vue";
 import { useElementPlus } from "@/plugins/elementPlus";
 import { injectResponsiveStorage } from "@/utils/responsive";
+import { resolveLocale } from "@/utils/locale";
 
 import Table from "@pureadmin/table";
 // import PureDescriptions from "@pureadmin/descriptions";
@@ -58,6 +59,11 @@ getPlatformConfig(app).then(async config => {
   app.use(router);
   await router.isReady();
   injectResponsiveStorage(app, config);
+  // 配置加载后同步默认语言（打包后改 platform-config.json 的 Locale 即可生效）
+  const locale = resolveLocale(
+    app.config.globalProperties.$storage?.locale?.locale
+  );
+  (i18n.global.locale as { value: string }).value = locale;
   app.use(MotionPlugin).use(useI18n).use(useElementPlus).use(Table);
   // .use(PureDescriptions)
   // .use(useEcharts);

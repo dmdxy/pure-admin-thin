@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { useGlobal } from "@pureadmin/utils";
 import { useNav } from "@/layout/hooks/useNav";
 
 import MenuFold from "~icons/ri/menu-fold-fill";
@@ -30,9 +29,6 @@ const iconClass = computed(() => {
   ];
 });
 
-const { $storage } = useGlobal<GlobalPropertiesApi>();
-const themeColor = computed(() => $storage.layout?.themeColor);
-
 const emit = defineEmits<{
   (e: "toggleClick"): void;
 }>();
@@ -54,7 +50,7 @@ const toggleClick = () => {
         placement: 'right'
       }"
       :icon="MenuFold"
-      :class="[iconClass, themeColor === 'light' ? '' : 'text-primary']"
+      :class="[iconClass, 'text-primary']"
       :style="{ transform: isActive ? 'none' : 'rotateY(180deg)' }"
       @click="toggleClick"
     />

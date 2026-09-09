@@ -110,6 +110,8 @@ export function useNav() {
   }
 
   function toggleSideBar() {
+    // 混合模式桌面端不允许折叠左侧
+    if (layout.value === "mix" && device.value !== "mobile") return;
     pureApp.toggleSideBar();
   }
 

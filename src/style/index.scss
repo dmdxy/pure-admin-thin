@@ -9,21 +9,28 @@
   /* 左侧菜单展开、收起动画时长 */
   --pure-transition-duration: 0.3s;
 
+  /* 页面边距与区块间距使用同一值，避免 margin/gap 叠在一起观感不一致 */
+  --pure-page-gap: 16px;
+  --pure-block-gap: var(--pure-page-gap);
+  --pure-block-pad: 16px;
+  --pure-block-radius: 8px;
+  --pure-table-row-pad: 14px;
+  --pure-table-row-pad-compact: 10px;
+  --pure-table-row-pad-loose: 20px;
+
   /* 常用border-color 需要时可取用 */
   --pure-border-color: rgb(5 5 5 / 6%);
+  --pure-radius: 4px;
+  --pure-radius-small: 3px;
 
   /* switch关闭状态下的color 需要时可取用 */
   --pure-switch-off-color: #a6a6a6;
 
-  /** 主题色 */
-  --pure-theme-sub-menu-active-text: initial;
-  --pure-theme-menu-bg: none;
-  --pure-theme-menu-hover: none;
-  --pure-theme-sub-menu-bg: transparent;
-  --pure-theme-menu-text: initial;
-  --pure-theme-sidebar-logo: none;
-  --pure-theme-menu-title-hover: initial;
-  --pure-theme-menu-active-before: transparent;
+  /* 导航主题只维护底色、主色和文字色，其余旧变量由 theme.scss 派生 */
+  --pure-menu-background: #fff;
+  --pure-menu-text-color: #475569;
+  --pure-menu-active-text-color: var(--el-color-primary);
+  --pure-theme-logo-title: #000000d9;
 }
 
 /* 灰色模式 */

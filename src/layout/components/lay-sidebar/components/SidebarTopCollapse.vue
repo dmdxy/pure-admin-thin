@@ -24,15 +24,14 @@ const toggleClick = () => {
 
 <template>
   <div
-    class="px-3 mr-1 navbar-bg-hover"
+    class="px-0 w-[54px] h-full flex items-center justify-center"
     :title="
       isActive ? t('buttons.pureClickCollapse') : t('buttons.pureClickExpand')
     "
     @click="toggleClick"
   >
-    <IconifyIconOffline
-      :icon="isActive ? MenuFold : MenuUnfold"
-      class="inline-block! align-middle hover:text-primary dark:hover:text-white!"
-    />
+    <span class="header-action-btn">
+      <IconifyIconOffline :icon="isActive ? MenuFold : MenuUnfold" />
+    </span>
   </div>
 </template>

@@ -24,7 +24,7 @@ watch(
 </script>
 
 <template>
-  <span class="fullscreen-icon navbar-bg-hover" @click="toggle">
+  <span class="fullscreen-icon header-action-btn" @click="toggle">
     <IconifyIconOffline :icon="screenIcon" />
   </span>
 </template>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { useGlobal } from "@pureadmin/utils";
 import { useNav } from "@/layout/hooks/useNav";
 
 import ArrowLeft from "~icons/ri/arrow-left-double-fill";
@@ -20,9 +19,6 @@ const { tooltipEffect } = useNav();
 const iconClass = computed(() => {
   return ["w-[16px]", "h-[16px]"];
 });
-
-const { $storage } = useGlobal<GlobalPropertiesApi>();
-const themeColor = computed(() => $storage.layout?.themeColor);
 
 const emit = defineEmits<{
   (e: "toggleClick"): void;
@@ -48,7 +44,7 @@ const toggleClick = () => {
   >
     <IconifyIconOffline
       :icon="ArrowLeft"
-      :class="[iconClass, themeColor === 'light' ? '' : 'text-primary']"
+      :class="[iconClass, 'text-primary']"
       :style="{ transform: isActive ? 'none' : 'rotateY(180deg)' }"
     />
   </div>

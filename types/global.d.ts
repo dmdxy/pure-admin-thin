@@ -90,6 +90,8 @@ declare global {
     MaxTagsLevel?: number;
     KeepAlive?: boolean;
     Locale?: string;
+    /** 打包后可改的可选语言列表，控制语言切换下拉项 */
+    AvailableLocales?: Array<string | { code: string; name: string }>;
     Layout?: string;
     Theme?: string;
     DarkMode?: boolean;

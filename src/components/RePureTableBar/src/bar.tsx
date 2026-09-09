@@ -27,10 +27,10 @@ import SettingIcon from "@/assets/table-bar/settings.svg?component";
 import CollapseIcon from "@/assets/table-bar/collapse.svg?component";
 
 const props = {
-  /** 头部最左边的标题 */
+  /** 头部最左边的标题，不传则不显示 */
   title: {
     type: String,
-    default: "列表"
+    default: ""
   },
   /** 对于树形表格，如果想启用展开和折叠功能，传入当前表格的ref即可 */
   tableRef: {
@@ -82,23 +82,18 @@ export default defineComponent({
       };
     });
 
-    const iconClass = computed(() => {
-      return [
-        "text-black",
-        "dark:text-white",
-        "duration-100",
-        "hover:text-primary!",
-        "cursor-pointer",
-        "outline-hidden"
-      ];
+    const toolBtnClass = "pure-table-tool-btn outline-hidden cursor-pointer";
+
+    const toolIconClass = computed(() => {
+      return ["w-4", "h-4"];
     });
 
     const topClass = computed(() => {
       return [
         "flex",
         "justify-between",
-        "pt-[3px]",
-        "px-[11px]",
+        "pt-2.5",
+        "px-3",
         "border-b-[1px]",
         "border-solid",
         "border-[#dcdfe6]",
@@ -243,156 +238,174 @@ export default defineComponent({
 
     const reference = {
       reference: () => (
-        <SettingIcon
-          class={["w-[16px]", iconClass.value]}
-          v-tippy={rendTippyProps("列设置")}
-        />
+        <span class={toolBtnClass} v-tippy={rendTippyProps("列设置")}>
+          <SettingIcon class={toolIconClass.value} />
+        </span>
       )
     };
 
     return () => (
-      <>
+      <div
+        {...attrs}
+        class={[
+          "pure-table-bar",
+          "w-full",
+          "bg-bg_color",
+          "flex",
+          "flex-col",
+          "min-h-0",
+          "overflow-hidden",
+          isFullscreen.value
+            ? ["h-full!", "z-2002", "fixed", "inset-0"]
+            : ["flex-1"]
+        ]}
+        style={{
+          padding: "var(--pure-block-pad)",
+          borderRadius: isFullscreen.value ? 0 : "var(--pure-block-radius)"
+        }}
+      >
         <div
-          {...attrs}
-          class={[
-            "w-full",
-            "px-2",
-            "pb-2",
-            "bg-bg_color",
-            isFullscreen.value
-              ? ["h-full!", "z-2002", "fixed", "inset-0"]
-              : "mt-2"
-          ]}
+          class="pure-table-bar__header flex items-center justify-between w-full shrink-0"
+          style={{
+            paddingBottom: "var(--pure-block-gap)"
+          }}
         >
-          <div class="flex justify-between w-full h-[60px] p-4">
+          <div class="flex items-center min-w-0">
+            {slots?.buttons ? (
+              <div class="flex items-center">{slots.buttons()}</div>
+            ) : null}
             {slots?.title ? (
               slots.title()
-            ) : (
+            ) : props.title ? (
               <p class="font-bold truncate">{props.title}</p>
-            )}
-            <div class="flex items-center justify-around">
-              {slots?.buttons ? (
-                <div class="flex mr-4">{slots.buttons()}</div>
-              ) : null}
-              {props.tableRef?.size ? (
-                <>
-                  <ExpandIcon
-                    class={["w-[16px]", iconClass.value]}
-                    style={{
-                      transform: isExpandAll.value ? "none" : "rotate(-90deg)"
-                    }}
-                    v-tippy={rendTippyProps(
-                      isExpandAll.value ? "折叠" : "展开"
-                    )}
-                    onClick={() => onExpand()}
-                  />
-                  <el-divider direction="vertical" />
-                </>
-              ) : null}
+            ) : null}
+          </div>
+          <div class="flex items-center shrink-0 gap-0.5">
+            {props.tableRef?.size ? (
+              <span
+                class={toolBtnClass}
+                v-tippy={rendTippyProps(isExpandAll.value ? "折叠" : "展开")}
+                onClick={() => onExpand()}
+              >
+                <ExpandIcon
+                  class={toolIconClass.value}
+                  style={{
+                    transform: isExpandAll.value ? "none" : "rotate(-90deg)"
+                  }}
+                />
+              </span>
+            ) : null}
+            <span
+              class={toolBtnClass}
+              v-tippy={rendTippyProps("刷新")}
+              onClick={() => onReFresh()}
+            >
               <RefreshIcon
                 class={[
-                  "w-[16px]",
-                  iconClass.value,
+                  toolIconClass.value,
                   loading.value ? "animate-spin" : ""
                 ]}
-                v-tippy={rendTippyProps("刷新")}
-                onClick={() => onReFresh()}
               />
-              <el-divider direction="vertical" />
-              <el-dropdown
-                v-slots={dropdown}
-                trigger="click"
-                v-tippy={rendTippyProps("密度")}
-              >
-                <CollapseIcon class={["w-[16px]", iconClass.value]} />
-              </el-dropdown>
-              <el-divider direction="vertical" />
+            </span>
+            <el-dropdown
+              v-slots={dropdown}
+              trigger="click"
+              v-tippy={rendTippyProps("行距")}
+            >
+              <span class={toolBtnClass}>
+                <CollapseIcon class={toolIconClass.value} />
+              </span>
+            </el-dropdown>
 
-              <el-popover
-                v-slots={reference}
-                placement="bottom-start"
-                popper-style={{ padding: 0 }}
-                width="200"
-                trigger="click"
-              >
-                <div class={[topClass.value]}>
-                  <el-checkbox
-                    class="-mr-1!"
-                    label="列展示"
-                    v-model={checkAll.value}
-                    indeterminate={isIndeterminate.value}
-                    onChange={value => handleCheckAllChange(value)}
-                  />
-                  <el-button type="primary" link onClick={() => onReset()}>
-                    重置
-                  </el-button>
-                </div>
+            <el-popover
+              v-slots={reference}
+              placement="bottom-start"
+              popper-style={{ padding: 0 }}
+              width="200"
+              trigger="click"
+            >
+              <div class={[topClass.value]}>
+                <el-checkbox
+                  class="-mr-1!"
+                  label="列展示"
+                  v-model={checkAll.value}
+                  indeterminate={isIndeterminate.value}
+                  onChange={value => handleCheckAllChange(value)}
+                />
+                <el-button type="primary" link onClick={() => onReset()}>
+                  重置
+                </el-button>
+              </div>
 
-                <div class="pt-[6px] pl-[11px]">
-                  <el-scrollbar max-height="36vh">
-                    <el-checkbox-group
-                      ref={`GroupRef${unref(props.tableKey)}`}
-                      modelValue={checkedColumns.value}
-                      onChange={value => handleCheckedColumnsChange(value)}
+              <div class="pt-[6px] pl-[11px]">
+                <el-scrollbar max-height="36vh">
+                  <el-checkbox-group
+                    ref={`GroupRef${unref(props.tableKey)}`}
+                    modelValue={checkedColumns.value}
+                    onChange={value => handleCheckedColumnsChange(value)}
+                  >
+                    <el-space
+                      direction="vertical"
+                      alignment="flex-start"
+                      size={0}
                     >
-                      <el-space
-                        direction="vertical"
-                        alignment="flex-start"
-                        size={0}
-                      >
-                        {checkColumnList.map((item, index) => {
-                          return (
-                            <div class="flex items-center">
-                              <DragIcon
-                                class={[
-                                  "drag-btn w-[16px] mr-2",
-                                  isFixedColumn(item)
-                                    ? "cursor-no-drop!"
-                                    : "cursor-grab!"
-                                ]}
-                                onMouseenter={(event: {
-                                  preventDefault: () => void;
-                                }) => rowDrop(event)}
-                              />
-                              <el-checkbox
-                                key={index}
-                                label={item}
-                                value={item}
-                                onChange={value =>
-                                  handleCheckColumnListChange(value, item)
-                                }
+                      {checkColumnList.map((item, index) => {
+                        return (
+                          <div class="flex items-center">
+                            <DragIcon
+                              class={[
+                                "drag-btn w-[16px] mr-2",
+                                isFixedColumn(item)
+                                  ? "cursor-no-drop!"
+                                  : "cursor-grab!"
+                              ]}
+                              onMouseenter={(event: {
+                                preventDefault: () => void;
+                              }) => rowDrop(event)}
+                            />
+                            <el-checkbox
+                              key={index}
+                              label={item}
+                              value={item}
+                              onChange={value =>
+                                handleCheckColumnListChange(value, item)
+                              }
+                            >
+                              <span
+                                title={transformI18n(item)}
+                                class="inline-block w-[120px] truncate hover:text-text_color_primary"
                               >
-                                <span
-                                  title={transformI18n(item)}
-                                  class="inline-block w-[120px] truncate hover:text-text_color_primary"
-                                >
-                                  {transformI18n(item)}
-                                </span>
-                              </el-checkbox>
-                            </div>
-                          );
-                        })}
-                      </el-space>
-                    </el-checkbox-group>
-                  </el-scrollbar>
-                </div>
-              </el-popover>
-              <el-divider direction="vertical" />
-
+                                {transformI18n(item)}
+                              </span>
+                            </el-checkbox>
+                          </div>
+                        );
+                      })}
+                    </el-space>
+                  </el-checkbox-group>
+                </el-scrollbar>
+              </div>
+            </el-popover>
+            <span
+              class={toolBtnClass}
+              v-tippy={isFullscreen.value ? "退出全屏" : "全屏"}
+              onClick={() => onFullscreen()}
+            >
               <iconifyIconOffline
-                class={["w-[16px]", iconClass.value]}
+                class={toolIconClass.value}
                 icon={isFullscreen.value ? ExitFullscreen : Fullscreen}
-                v-tippy={isFullscreen.value ? "退出全屏" : "全屏"}
-                onClick={() => onFullscreen()}
               />
-            </div>
+            </span>
           </div>
+        </div>
+        <div class="pure-table-bar__body flex-1 min-h-0 overflow-hidden">
           {slots.default({
             size: size.value,
-            dynamicColumns: dynamicColumns.value
+            dynamicColumns: dynamicColumns.value,
+            height: "100%"
           })}
         </div>
-      </>
+      </div>
     );
   }
 });

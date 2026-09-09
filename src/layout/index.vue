@@ -2,6 +2,7 @@
 import "animate.css";
 // 引入 src/components/ReIcon/src/offlineIcon.ts 文件中所有使用addIcon添加过的本地图标
 import "@/components/ReIcon/src/offlineIcon";
+import "@/components/ReIcon/src/localIconRegistry";
 import { setType } from "./types";
 import { useI18n } from "vue-i18n";
 import { useLayout } from "./hooks/useLayout";
@@ -96,11 +97,16 @@ useResizeObserver(appWrapperRef, entries => {
   width <= 760 ? setTheme("vertical") : setTheme(useAppStoreHook().layout);
   /** width app-wrapper类容器宽度
    * 0 < width <= 760 隐藏侧边栏
-   * 760 < width <= 990 折叠侧边栏
+   * 760 < width <= 990 折叠侧边栏（混合模式除外：子菜单常无 icon，不折叠）
    * width > 990 展开侧边栏
    */
+  const isMixLayout = layout.value?.includes("mix");
   if (width > 0 && width <= 760) {
     toggle("mobile", false);
+    isAutoCloseSidebar = true;
+  } else if (isMixLayout) {
+    // 混合模式桌面端始终展开左侧
+    toggle("desktop", true);
     isAutoCloseSidebar = true;
   } else if (width > 760 && width <= 990) {
     if (isAutoCloseSidebar) {

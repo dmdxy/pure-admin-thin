@@ -14,7 +14,6 @@ import { emitter } from "@/utils/mitt";
 import LayPanel from "../lay-panel/index.vue";
 import { useNav } from "@/layout/hooks/useNav";
 import { useAppStoreHook } from "@/store/modules/app";
-import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import Segmented, { type OptionsType } from "@/components/ReSegmented";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { useDark, useGlobal, debounce, isNumber } from "@pureadmin/utils";
@@ -53,32 +52,19 @@ if (unref(layoutTheme)) {
   setLayoutModel(layout);
 }
 
-/** 默认灵动模式 */
-const markValue = ref($storage.configure?.showModel ?? "smart");
-
 const logoVal = ref($storage.configure?.showLogo ?? true);
 
 const settings = reactive({
   greyVal: $storage.configure.grey,
   weakVal: $storage.configure.weak,
-  tabsVal: $storage.configure.hideTabs,
   showLogo: $storage.configure.showLogo,
-  showModel: $storage.configure.showModel,
   hideFooter: $storage.configure.hideFooter,
-  multiTagsCache: $storage.configure.multiTagsCache,
   stretch: $storage.configure.stretch
 });
 
 const getThemeColorStyle = computed(() => {
   return color => {
     return { background: color };
-  };
-});
-
-/** 当网页整体为暗色风格时不显示亮白色主题配色切换选项 */
-const showThemeColors = computed(() => {
-  return themeColor => {
-    return themeColor === "light" && isDark.value ? false : true;
   };
 });
 
@@ -102,32 +88,11 @@ const weekChange = (value): void => {
   storageConfigureChange("weak", value);
 };
 
-/** 隐藏标签页设置 */
-const tagsChange = () => {
-  const showVal = settings.tabsVal;
-  storageConfigureChange("hideTabs", showVal);
-  emitter.emit("tagViewsChange", showVal as unknown as string);
-};
-
 /** 隐藏页脚设置 */
 const hideFooterChange = () => {
   const hideFooter = settings.hideFooter;
   storageConfigureChange("hideFooter", hideFooter);
 };
-
-/** 标签页持久化设置 */
-const multiTagsCacheChange = () => {
-  const multiTagsCache = settings.multiTagsCache;
-  storageConfigureChange("multiTagsCache", multiTagsCache);
-  useMultiTagsStoreHook().multiTagsCacheChange(multiTagsCache);
-};
-
-function onChange({ option }) {
-  const { value } = option;
-  markValue.value = value;
-  storageConfigureChange("showModel", value);
-  emitter.emit("tagViewsShowModel", value);
-}
 
 /** 侧边栏Logo */
 function logoChange() {
@@ -169,22 +134,19 @@ const stretchTypeChange = ({ option }) => {
   value === "custom" ? setStretch(1440) : setStretch(false);
 };
 
-/** 主题色 激活选择项 */
+/** 主题色 激活选择项：默认勾第一个；色块均为彩色，勾始终用白色 */
 const getThemeColor = computed(() => {
   return current => {
-    if (
-      current === layoutTheme.value.theme &&
-      layoutTheme.value.theme !== "light"
-    ) {
-      return "#fff";
-    } else if (
-      current === layoutTheme.value.theme &&
-      layoutTheme.value.theme === "light"
-    ) {
-      return "#1d2b45";
-    } else {
-      return "transparent";
-    }
+    const selected =
+      layoutTheme.value.themeColor ||
+      layoutTheme.value.theme ||
+      themeColors.value[0].themeColor;
+    const resolved = themeColors.value.some(
+      item => item.themeColor === selected
+    )
+      ? selected
+      : themeColors.value[0].themeColor;
+    return current === resolved ? "#fff" : "transparent";
   };
 });
 
@@ -218,26 +180,6 @@ const themeOptions = computed<Array<OptionsType>>(() => {
   ];
 });
 
-const markOptions = computed<Array<OptionsType>>(() => {
-  return [
-    {
-      label: t("panel.pureTagsStyleSmart"),
-      tip: t("panel.pureTagsStyleSmartTip"),
-      value: "smart"
-    },
-    {
-      label: t("panel.pureTagsStyleCard"),
-      tip: t("panel.pureTagsStyleCardTip"),
-      value: "card"
-    },
-    {
-      label: t("panel.pureTagsStyleChrome"),
-      tip: t("panel.pureTagsStyleChromeTip"),
-      value: "chrome"
-    }
-  ];
-});
-
 /** 设置导航模式 */
 function setLayoutModel(layout: string) {
   layoutTheme.value.layout = layout;
@@ -252,6 +194,10 @@ function setLayoutModel(layout: string) {
     overallStyle: $storage.layout?.overallStyle
   };
   useAppStoreHook().setLayout(layout);
+  // 混合模式强制展开左侧，避免无 icon 的子菜单折叠成难看状态
+  if (layout === "mix") {
+    useAppStoreHook().toggleSideBar(true, "resize");
+  }
 }
 
 watch($storage, ({ layout }) => {
@@ -306,7 +252,6 @@ onBeforeMount(() => {
       document.querySelector("html")?.classList.add("html-grey");
     settings.weakVal &&
       document.querySelector("html")?.classList.add("html-weakness");
-    settings.tabsVal && tagsChange();
     settings.hideFooter && hideFooterChange();
   });
 });
@@ -338,17 +283,12 @@ onUnmounted(() => removeMatchMedia);
       <p :class="['mt-5!', pClass]">{{ t("panel.pureThemeColor") }}</p>
       <ul class="theme-color">
         <li
-          v-for="(item, index) in themeColors"
-          v-show="showThemeColors(item.themeColor)"
-          :key="index"
-          :style="getThemeColorStyle(item.color)"
+          v-for="item in themeColors"
+          :key="item.themeColor"
+          :style="getThemeColorStyle(item.primaryColor)"
           @click="setLayoutThemeColor(item.themeColor)"
         >
-          <el-icon
-            style="margin: 0.1em 0.1em 0 0"
-            :size="17"
-            :color="getThemeColor(item.themeColor)"
-          >
+          <el-icon :size="17" :color="getThemeColor(item.themeColor)">
             <IconifyIconOffline :icon="Check" />
           </el-icon>
         </li>
@@ -438,15 +378,6 @@ onUnmounted(() => removeMatchMedia);
         </button>
       </span>
 
-      <p :class="['mt-4!', pClass]">{{ t("panel.pureTagsStyle") }}</p>
-      <Segmented
-        resize
-        class="select-none"
-        :modelValue="markValue === 'smart' ? 0 : markValue === 'card' ? 1 : 2"
-        :options="markOptions"
-        @change="onChange"
-      />
-
       <p class="mt-5! font-medium text-sm dark:text-white">
         {{ t("panel.pureInterfaceDisplay") }}
       </p>
@@ -472,16 +403,6 @@ onUnmounted(() => removeMatchMedia);
           />
         </li>
         <li>
-          <span class="dark:text-white">{{ t("panel.pureHiddenTags") }}</span>
-          <el-switch
-            v-model="settings.tabsVal"
-            inline-prompt
-            :active-text="t('buttons.pureOpenText')"
-            :inactive-text="t('buttons.pureCloseText')"
-            @change="tagsChange"
-          />
-        </li>
-        <li>
           <span class="dark:text-white">{{ t("panel.pureHiddenFooter") }}</span>
           <el-switch
             v-model="settings.hideFooter"
@@ -501,18 +422,6 @@ onUnmounted(() => removeMatchMedia);
             :active-text="t('buttons.pureOpenText')"
             :inactive-text="t('buttons.pureCloseText')"
             @change="logoChange"
-          />
-        </li>
-        <li>
-          <span class="dark:text-white">
-            {{ t("panel.pureMultiTagsCache") }}
-          </span>
-          <el-switch
-            v-model="settings.multiTagsCache"
-            inline-prompt
-            :active-text="t('buttons.pureOpenText')"
-            :inactive-text="t('buttons.pureCloseText')"
-            @change="multiTagsCacheChange"
           />
         </li>
       </ul>
@@ -538,18 +447,17 @@ onUnmounted(() => removeMatchMedia);
 }
 
 .theme-color {
-  height: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 
   li {
-    float: left;
+    display: grid;
+    place-items: center;
+    width: 20px;
     height: 20px;
-    margin-right: 8px;
     cursor: pointer;
     border-radius: 4px;
-
-    &:nth-child(1) {
-      border: 1px solid #ddd;
-    }
   }
 }
 

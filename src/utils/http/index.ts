@@ -118,6 +118,15 @@ class PureHttp {
     instance.interceptors.response.use(
       (response: PureHttpResponse) => {
         const $config = response.config;
+        const isBlobResponse = response.config.responseType === "blob";
+        // v1 接口仅 code === 0 表示成功，HTTP 200 不代表业务成功。
+        if (
+          !isBlobResponse &&
+          $config.url?.startsWith("/v1/") &&
+          response.data?.code !== 0
+        ) {
+          throw new Error(response.data?.message || "请求失败，请稍后重试");
+        }
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
           $config.beforeResponseCallback(response);

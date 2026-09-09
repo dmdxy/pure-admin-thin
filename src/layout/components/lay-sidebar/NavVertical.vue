@@ -9,25 +9,16 @@ import { usePermissionStoreHook } from "@/store/modules/permission";
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import LaySidebarLogo from "../lay-sidebar/components/SidebarLogo.vue";
 import LaySidebarItem from "../lay-sidebar/components/SidebarItem.vue";
-import LaySidebarLeftCollapse from "../lay-sidebar/components/SidebarLeftCollapse.vue";
-import LaySidebarCenterCollapse from "../lay-sidebar/components/SidebarCenterCollapse.vue";
+import LaySidebarUser from "../lay-sidebar/components/SidebarUser.vue";
 
 const route = useRoute();
-const isShow = ref(false);
 const showLogo = ref(
   storageLocal().getItem<StorageConfigs>(
     `${responsiveStorageNameSpace()}configure`
   )?.showLogo ?? true
 );
 
-const {
-  device,
-  pureApp,
-  isCollapse,
-  tooltipEffect,
-  menuSelect,
-  toggleSideBar
-} = useNav();
+const { device, pureApp, isCollapse, tooltipEffect, menuSelect } = useNav();
 
 const subMenuData = ref([]);
 
@@ -49,12 +40,10 @@ function getSubMenuData() {
   let path = "";
   path = defaultActive.value;
   subMenuData.value = [];
-  // path的上级路由组成的数组
   const parentPathArr = getParentPaths(
     path,
     usePermissionStoreHook().wholeMenus
   );
-  // 当前路由的父级路由信息
   const parenetRoute = findRouteByPath(
     parentPathArr[0] || path,
     usePermissionStoreHook().wholeMenus
@@ -81,7 +70,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  // 解绑`logoChange`公共事件，防止多次触发
   emitter.off("logoChange");
 });
 </script>
@@ -89,9 +77,11 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-loading="loading"
-    :class="['sidebar-container', showLogo ? 'has-logo' : 'no-logo']"
-    @mouseenter.prevent="isShow = true"
-    @mouseleave.prevent="isShow = false"
+    :class="[
+      'sidebar-container',
+      showLogo ? 'has-logo' : 'no-logo',
+      'has-user'
+    ]"
   >
     <LaySidebarLogo v-if="showLogo" :collapse="isCollapse" />
     <el-scrollbar
@@ -117,21 +107,17 @@ onBeforeUnmount(() => {
         />
       </el-menu>
     </el-scrollbar>
-    <LaySidebarCenterCollapse
-      v-if="device !== 'mobile' && (isShow || isCollapse)"
-      :is-active="pureApp.sidebar.opened"
-      @toggleClick="toggleSideBar"
-    />
-    <LaySidebarLeftCollapse
-      v-if="device !== 'mobile'"
-      :is-active="pureApp.sidebar.opened"
-      @toggleClick="toggleSideBar"
-    />
+    <LaySidebarUser />
   </div>
 </template>
 
 <style scoped>
 :deep(.el-loading-mask) {
   opacity: 0.45;
+}
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
 }
 </style>

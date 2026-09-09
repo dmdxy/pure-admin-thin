@@ -65,7 +65,10 @@ watch(
 </script>
 <template>
   <template v-for="[fullPath, Comp] in compList" :key="fullPath">
-    <div v-show="fullPath === currRoute.fullPath" class="w-full h-full">
+    <div
+      v-show="fullPath === currRoute.fullPath"
+      class="flex flex-col flex-1 w-full h-full min-h-0 min-w-0"
+    >
       <slot
         :fullPath="fullPath"
         :Comp="Comp"
@@ -73,7 +76,10 @@ watch(
       />
     </div>
   </template>
-  <div v-show="!keep" class="w-full h-full">
+  <div
+    v-show="!keep"
+    class="flex flex-col flex-1 w-full h-full min-h-0 min-w-0"
+  >
     <slot :Comp="normalComp" :fullPath="currRoute.fullPath" frameInfo />
   </div>
 </template>

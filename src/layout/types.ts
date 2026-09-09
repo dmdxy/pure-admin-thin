@@ -5,11 +5,11 @@ export const routerArrays: Array<RouteConfigs> =
   VITE_HIDE_HOME === "false"
     ? [
         {
-          path: "/welcome",
-          name: "Welcome",
+          path: "/workbench",
+          name: "Workbench",
           meta: {
-            title: "menus.pureHome",
-            icon: "ep/home-filled"
+            title: "menus.workbench",
+            icon: "ri/dashboard-3-line"
           }
         }
       ]
@@ -82,8 +82,10 @@ export type menuType = {
 };
 
 export type themeColorsType = {
-  color: string;
   themeColor: string;
+  menuBackground: string;
+  primaryColor: string;
+  menuTextColor: string;
 };
 
 export interface scrollbarDomType extends HTMLElement {

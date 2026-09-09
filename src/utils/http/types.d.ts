@@ -9,6 +9,12 @@ export type resultType = {
   accessToken?: string;
 };
 
+export type ApiResult<T> = {
+  code: number;
+  message: string;
+  data: T;
+};
+
 export type RequestMethods = Extract<
   Method,
   "get" | "post" | "put" | "delete" | "patch" | "option" | "head"

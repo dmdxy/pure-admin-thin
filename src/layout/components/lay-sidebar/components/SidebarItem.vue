@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getConfig } from "@/config";
 import { posix } from "path-browserify";
 import { menuType } from "@/layout/types";
 import { ReText } from "@/components/ReText";
@@ -18,7 +17,7 @@ import {
 } from "vue";
 
 import ArrowUp from "~icons/ep/arrow-up-bold";
-import EpArrowDown from "~icons/ep/arrow-down-bold";
+import ArrowDown from "~icons/ep/arrow-down-bold";
 import ArrowLeft from "~icons/ep/arrow-left-bold";
 import ArrowRight from "~icons/ep/arrow-right-bold";
 
@@ -77,9 +76,8 @@ const textClass = computed(() => {
 });
 
 const expandCloseIcon = computed(() => {
-  if (!getConfig()?.MenuArrowIconNoTransition) return "";
   return {
-    "expand-close-icon": useRenderIcon(EpArrowDown),
+    "expand-close-icon": useRenderIcon(ArrowDown),
     "expand-open-icon": useRenderIcon(ArrowUp),
     "collapse-close-icon": useRenderIcon(ArrowRight),
     "collapse-open-icon": useRenderIcon(ArrowLeft)
@@ -147,7 +145,7 @@ function resolvePath(routePath) {
           "
         />
       </div>
-      <el-text
+      <ReText
         v-if="
           (!item?.meta.icon &&
             isCollapse &&
@@ -158,11 +156,14 @@ function resolvePath(routePath) {
             layout === 'mix' &&
             item?.pathList?.length === 2)
         "
-        truncated
+        :tippyProps="{
+          offset: [0, -10],
+          theme: tooltipEffect
+        }"
         class="w-full! px-3! min-w-[54px]! text-center! text-inherit!"
       >
         {{ transformI18n(onlyOneChild.meta.title) }}
-      </el-text>
+      </ReText>
 
       <template #title>
         <div :style="getDivStyle">

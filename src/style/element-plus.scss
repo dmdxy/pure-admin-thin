@@ -64,6 +64,15 @@
   }
 }
 
+.permission-dialog {
+  --el-dialog-padding-primary: 20px;
+
+  .el-dialog__body {
+    padding-right: var(--el-dialog-padding-primary);
+    padding-left: var(--el-dialog-padding-primary);
+  }
+}
+
 /* 全局覆盖element-plus的el-tour、el-dialog、el-drawer、el-message-box、el-notification组件右上角关闭图标和el-upload上传文件列表右侧关闭图标的样式，表现更鲜明 */
 .el-dialog__headerbtn,
 .el-message-box__headerbtn {
@@ -158,6 +167,108 @@
     box-shadow:
       0 -1px 0 0 #e0e3e8,
       0 -3px 6px 0 rgb(69 98 155 / 12%);
+  }
+}
+
+.pure-table-bar__body > * {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 表格：表头固定，只让表体出现纵向滚动条；行距用单元格上下内边距，不改字号 */
+.pure-table {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  > .el-table {
+    flex: 1;
+    height: 0 !important;
+    min-height: 0;
+  }
+
+  .el-table__inner-wrapper {
+    height: 100%;
+  }
+
+  .el-table .el-table__cell {
+    padding-top: var(--pure-table-row-pad);
+    padding-bottom: var(--pure-table-row-pad);
+  }
+
+  .el-table__header-wrapper {
+    overflow-y: hidden !important;
+  }
+
+  /* 表头右侧留白跟表头同色，避免看起来像表头里还有一条滚动条 */
+  .el-table__header .el-table__cell.gutter,
+  .el-table__header th.gutter {
+    background-color: var(--el-fill-color-light) !important;
+    border-bottom: var(--el-table-border);
+  }
+
+  .el-table__body-wrapper {
+    overflow-y: auto;
+  }
+
+  .pure-pagination {
+    flex-shrink: 0;
+    margin-top: var(--pure-block-gap) !important;
+    margin-bottom: 0 !important;
+  }
+
+  .el-table__empty-text {
+    line-height: normal;
+  }
+
+  .el-empty {
+    padding: 8px 0;
+  }
+}
+
+.pure-table--small .el-table .el-table__cell {
+  padding-top: var(--pure-table-row-pad-compact);
+  padding-bottom: var(--pure-table-row-pad-compact);
+}
+
+.pure-table--large .el-table .el-table__cell {
+  padding-top: var(--pure-table-row-pad-loose);
+  padding-bottom: var(--pure-table-row-pad-loose);
+}
+
+.pure-table-tool-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--el-text-color-regular);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+
+  svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+    fill: currentcolor;
+  }
+
+  &:hover {
+    color: var(--el-color-primary);
+    background: var(--el-fill-color);
   }
 }
 

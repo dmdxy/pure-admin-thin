@@ -11,28 +11,17 @@ const { title, getLogo } = useNav();
 
 <template>
   <div class="sidebar-logo-container" :class="{ collapses: collapse }">
-    <transition name="sidebarLogoFade">
-      <router-link
-        v-if="collapse"
-        key="collapse"
-        :title="title"
-        class="sidebar-logo-link"
-        :to="getTopMenu()?.path ?? '/'"
-      >
+    <router-link
+      :title="title"
+      class="sidebar-logo-link"
+      :to="getTopMenu()?.path ?? '/'"
+    >
+      <!-- icon 固定在 54px 列内居中，折叠/展开位置不变 -->
+      <span class="sidebar-logo-icon">
         <img :src="getLogo()" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
-      </router-link>
-      <router-link
-        v-else
-        key="expand"
-        :title="title"
-        class="sidebar-logo-link"
-        :to="getTopMenu()?.path ?? '/'"
-      >
-        <img :src="getLogo()" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
-      </router-link>
-    </transition>
+      </span>
+      <span v-show="!collapse" class="sidebar-title">{{ title }}</span>
+    </router-link>
   </div>
 </template>
 
@@ -48,25 +37,36 @@ const { title, getLogo } = useNav();
     flex-wrap: nowrap;
     align-items: center;
     height: 100%;
-    padding-left: 10px;
+  }
+
+  .sidebar-logo-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 48px;
 
     img {
-      display: inline-block;
+      display: block;
+      width: 32px;
       height: 32px;
+      object-fit: contain;
     }
+  }
 
-    .sidebar-title {
-      display: inline-block;
-      height: 32px;
-      margin: 2px 0 0 12px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 32px;
-      color: var(--pure-theme-sub-menu-active-text);
-      white-space: nowrap;
-    }
+  .sidebar-title {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    padding-right: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 32px;
+    color: var(--pure-theme-logo-title, #000000d9);
+    white-space: nowrap;
   }
 }
 </style>
