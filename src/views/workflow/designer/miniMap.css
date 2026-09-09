@@ -1,0 +1,54 @@
+.gc-wf .lf-mini-map {
+  z-index: 3;
+  padding: 6px;
+  background: var(--wf-card);
+  border: 1px solid var(--wf-border-strong);
+  border-radius: var(--pure-radius);
+  box-shadow: 0 2px 8px var(--wf-shadow);
+}
+
+.gc-wf .lf-mini-map-graph {
+  cursor: crosshair;
+  user-select: none;
+  background: var(--wf-canvas);
+  border-radius: var(--pure-radius);
+}
+
+.gc-wf .lf-minimap-viewport {
+  z-index: 2;
+  background: color-mix(in srgb, var(--wf-primary) 8%, transparent);
+  border: 1.5px solid var(--wf-primary);
+  border-radius: var(--pure-radius);
+}
+
+.gc-wf .lf-minimap-viewport:active {
+  cursor: grabbing;
+}
+
+.gc-wf .lf-mini-map .lf-edge path {
+  stroke: var(--wf-edge);
+}
+
+.gc-wf .lf-mini-map .lf-node rect {
+  rx: var(--pure-radius);
+  ry: var(--pure-radius);
+}
+
+.gc-wf .lf-mini-map .start-node .lf-basic-shape,
+.gc-wf .lf-mini-map .end-node .lf-basic-shape {
+  rx: 32px;
+  ry: 32px;
+}
+.gc-wf .lf-mini-map .start-node .lf-basic-shape {
+  fill: color-mix(in srgb, var(--wf-ok) 24%, var(--wf-card));
+  stroke: var(--wf-ok);
+}
+.gc-wf .lf-mini-map .end-node .lf-basic-shape {
+  fill: color-mix(in srgb, var(--wf-danger) 24%, var(--wf-card));
+  stroke: var(--wf-danger);
+}
+
+.gc-wf .lf-mini-map .lf-arrow path {
+  fill: var(--wf-edge);
+  stroke: var(--wf-edge);
+}
