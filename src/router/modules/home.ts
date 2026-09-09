@@ -6,20 +6,21 @@ export default {
   path: "/",
   name: "Home",
   component: Layout,
-  redirect: "/welcome",
+  redirect: "/workbench",
   meta: {
-    icon: "ep/home-filled",
-    title: $t("menus.pureHome"),
+    icon: "ri/dashboard-3-line",
+    title: $t("menus.workbench"),
     rank: 0
   },
   children: [
     {
-      path: "/welcome",
-      name: "Welcome",
-      component: () => import("@/views/welcome/index.vue"),
+      path: "/workbench",
+      name: "Workbench",
+      component: () => import("@/views/workbench/index.vue"),
       meta: {
-        title: $t("menus.pureHome"),
-        showLink: VITE_HIDE_HOME === "true" ? false : true
+        title: $t("menus.workbench"),
+        showLink: VITE_HIDE_HOME === "true" ? false : true,
+        fixedTag: VITE_HIDE_HOME !== "true"
       }
     }
   ]

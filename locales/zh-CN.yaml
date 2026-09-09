@@ -62,16 +62,84 @@ panel:
   pureMultiTagsCache: 页签持久化
 menus:
   pureHome: 首页
+  workbench: 工作台
+  pureTableDemo: 表格测试
   pureLogin: 登录
   pureAbnormal: 异常页面
   purePageNotFound: "404"
   pureAccessDenied: "403"
   pureServerError: "500"
-  purePermission: 权限管理
-  purePermissionPage: 页面权限
-  purePermissionButton: 按钮权限
-  purePermissionButtonRouter: 路由返回按钮权限
-  purePermissionButtonLogin: 登录接口返回按钮权限
+  pureWorkflow: 工作流
+  project: 项目管理
+  projectItem: 项目列表
+  projectScheme: 项目方案
+  projectProcess: 工序管理
+  projectGroup: 项目分组
+  multitask: 多机并行
+  multitaskItem: 并行任务
+  multitaskTemplate: 任务模板
+  multitaskPlugin: 插件管理
+  multitaskGroup: 插件分组
+  computer: 算力调度
+  computerSchedule: 调度拓扑
+  collaboration: 协同任务
+  collaborationTask: 任务列表
+  collaborationTaskStat: 任务统计
+  collaborationTaskDetail: 任务详情
+  log: 日志中心
+  logOverview: 日志概览
+  logQuery: 日志查询
+  notification: 消息通知
+  system: 系统管理
+  systemUser: 用户管理
+  systemRole: 角色管理
+  systemMenu: 菜单管理
+  systemDept: 部门管理
+  systemField: 字段管理
+workflow:
+  subtitle: 选择业务入口，继续编排或查看最近工作流
+  create: 新建
+  recentTitle: 最近打开
+  recentClear: 清空
+  recentClearHint: 确定清空最近打开记录吗？
+  recentEmpty: 暂无最近记录
+  recentEmptyHint: 打开或创建工作流后会显示在这里
+  recentOpen: 打开
+  recentRemove: 移除
+  backConsole: 返回控制台
+  backHome: 返回首页
+  project: 项目流程
+  scheme: 项目方案
+  parallel: 多机并行
+  template: 并行模板
+  typeInstance: 实例
+  typeTemplate: 模板
+  untitledProject: 未命名项目
+  untitledScheme: 未命名方案
+  untitledParallel: 未命名并行任务
+  untitledTemplate: 未命名模板
+  projectInstanceDesc: 面向交付的项目流程实例
+  schemeDesc: 可复用的项目方案模板
+  parallelInstanceDesc: 可调度执行的多机并行任务
+  templateDesc: 多机并行任务的标准模板
+  tagCanvas: 画布
+  tagDelivery: 交付
+  tagReuse: 复用
+  tagStandard: 标准
+  tagSchedule: 调度
+  tagRun: 运行
+  tagStrategy: 策略
+  tagLaunch: 启动
+  timeJustNow: 刚刚
+  timeMinutes: "{n} 分钟前"
+  timeHours: "{n} 小时前"
+  timeDays: "{n} 天前"
+  seedHarbor: 港口测绘项目
+  seedSurveyScheme: 测绘标准方案
+  seedTripleCollect: 三机采集任务
+  seedNightTemplate: 夜间巡检模板
+  seedPipeline: 管线复核项目
+  seedDualCheck: 双机质检模板
 status:
   pureLoad: 加载中...
   pureMessage: 消息
@@ -88,4 +156,7 @@ login:
   pureLoginFail: 登录失败
   pureUsernameReg: 请输入账号
   purePassWordReg: 请输入密码
-  purePassWordRuleReg: 密码格式应为8-18位数字、字母、符号的任意两种组合
+  purePassWordRuleReg: 密码至少 6 位
+  description: 请使用账号密码登录系统
+  remember: 记住我
+  footnote: 如需开通账号，请联系系统管理员

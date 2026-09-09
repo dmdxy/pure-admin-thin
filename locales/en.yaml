@@ -62,16 +62,84 @@ panel:
   pureMultiTagsCache: MultiTags Cache
 menus:
   pureHome: Home
+  workbench: Workbench
+  pureTableDemo: Table Demo
   pureLogin: Login
   pureAbnormal: Abnormal Page
   purePageNotFound: "404"
   pureAccessDenied: "403"
   pureServerError: "500"
-  purePermission: Permission Manage
-  purePermissionPage: Page Permission
-  purePermissionButton: Button Permission
-  purePermissionButtonRouter: Route return button permission
-  purePermissionButtonLogin: Login interface return button permission
+  pureWorkflow: Workflow
+  project: Projects
+  projectItem: Project List
+  projectScheme: Project Schemes
+  projectProcess: Processes
+  projectGroup: Project Groups
+  multitask: Multitask
+  multitaskItem: Parallel Tasks
+  multitaskTemplate: Task Templates
+  multitaskPlugin: Plugins
+  multitaskGroup: Plugin Groups
+  computer: Compute Schedule
+  computerSchedule: Schedule Topology
+  collaboration: Collaboration
+  collaborationTask: Task List
+  collaborationTaskStat: Task Stats
+  collaborationTaskDetail: Task Detail
+  log: Logs
+  logOverview: Log Overview
+  logQuery: Log Query
+  notification: Notifications
+  system: System
+  systemUser: User Management
+  systemRole: Role Management
+  systemMenu: Menu Management
+  systemDept: Department Management
+  systemField: Field Management
+workflow:
+  subtitle: Choose an entry to continue designing or reopen recent workflows
+  create: Create
+  recentTitle: Recently opened
+  recentClear: Clear
+  recentClearHint: Clear all recently opened workflows?
+  recentEmpty: No recent workflows
+  recentEmptyHint: Open or create a workflow to see it here
+  recentOpen: Open
+  recentRemove: Remove
+  backConsole: Back to console
+  backHome: Back to home
+  project: Project flow
+  scheme: Project scheme
+  parallel: Multitask
+  template: Multitask template
+  typeInstance: Instance
+  typeTemplate: Template
+  untitledProject: Untitled project
+  untitledScheme: Untitled scheme
+  untitledParallel: Untitled multitask
+  untitledTemplate: Untitled template
+  projectInstanceDesc: Delivery-oriented project workflow instance
+  schemeDesc: Reusable project scheme template
+  parallelInstanceDesc: Schedulable multitask instance
+  templateDesc: Standard template for multitask jobs
+  tagCanvas: Canvas
+  tagDelivery: Delivery
+  tagReuse: Reuse
+  tagStandard: Standard
+  tagSchedule: Schedule
+  tagRun: Run
+  tagStrategy: Strategy
+  tagLaunch: Launch
+  timeJustNow: Just now
+  timeMinutes: "{n} min ago"
+  timeHours: "{n} hr ago"
+  timeDays: "{n} days ago"
+  seedHarbor: Harbor survey project
+  seedSurveyScheme: Survey standard scheme
+  seedTripleCollect: Triple-collector task
+  seedNightTemplate: Night patrol template
+  seedPipeline: Pipeline review project
+  seedDualCheck: Dual-check template
 status:
   pureLoad: Loading...
   pureMessage: Message
@@ -88,4 +156,7 @@ login:
   pureLoginFail: Login Fail
   pureUsernameReg: Please enter username
   purePassWordReg: Please enter password
-  purePassWordRuleReg: The password format should be any combination of 8-18 digits
+  purePassWordRuleReg: Password must be at least 6 characters
+  description: Sign in with your account credentials
+  remember: Remember me
+  footnote: Contact the administrator to request an account
