@@ -49,6 +49,10 @@
     "url": "https://github.com/xiaoxian521"
   },
   "dependencies": {
+    "@logicflow/core": "^2.2.5",
+    "@logicflow/extension": "^2.3.1",
+    "@logicflow/layout": "^2.1.5",
+    "@logicflow/vue-node-registry": "^1.2.5",
     "@pureadmin/descriptions": "^1.2.1",
     "@pureadmin/table": "^3.3.0",
     "@pureadmin/utils": "^2.6.4",
@@ -67,6 +71,7 @@
     "path-browserify": "^1.0.1",
     "pinia": "^4.0.3",
     "pinyin-pro": "^3.29.3",
+    "plus-pro-components": "^0.1.31",
     "qs": "^6.16.0",
     "responsive-storage": "^2.2.0",
     "sortablejs": "^1.15.7",
