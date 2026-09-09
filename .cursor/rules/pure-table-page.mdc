@@ -1,0 +1,16 @@
+---
+description: PureAdmin 列表页必须沿用 PureTableBar 表格模板
+globs: src/views/**/*.vue,src/router/modules/*.ts
+alwaysApply: false
+---
+
+# 列表页
+
+新列表页对齐 `src/views/table/index.vue`，并遵循技能 `pure-table-page`。
+
+- 根节点：`h-full min-h-0 overflow-hidden!`，`gap: var(--pure-page-gap)`
+- `PureTableBar` + `#default="{ size, dynamicColumns, height }"`，表格 `:height="height"`
+- 禁止 `adaptive`；禁止把 `size` 传给表格的 `size`；用 `pure-table--${size}` 只改行距
+- 无卡片内标题；新增在 `#buttons`；`stripe` + `table-layout="fixed"`
+- 空数据用 `#empty` + `el-empty`（带图标），不要只用默认文字
+- 间距只用 `--pure-page-gap` / `--pure-block-pad` / `--pure-block-radius`
