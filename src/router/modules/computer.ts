@@ -16,6 +16,15 @@ export default {
       meta: {
         title: $t("menus.computerSchedule")
       }
+    },
+    {
+      path: "/computer/schedule/detail/:kind/:id",
+      name: "ComputerScheduleDetail",
+      component: () => import("@/views/computer/schedule/detail/index.vue"),
+      meta: {
+        title: $t("menus.computerScheduleDetail"),
+        showLink: false
+      }
     }
   ]
 } satisfies RouteConfigsTable;

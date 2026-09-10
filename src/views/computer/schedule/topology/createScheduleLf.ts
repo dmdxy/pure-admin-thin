@@ -1,5 +1,6 @@
 import LogicFlow from "@logicflow/core";
 import { registerTopoNodes } from "./register";
+import { TOPO_EDGE_TYPE } from "./types";
 
 export function createScheduleLf(container: HTMLElement): LogicFlow {
   const arrow = "#64748B";
@@ -9,7 +10,7 @@ export function createScheduleLf(container: HTMLElement): LogicFlow {
     container,
     grid: false,
     background: { backgroundColor: "transparent" },
-    edgeType: "bezier",
+    edgeType: TOPO_EDGE_TYPE,
     history: false,
     keyboard: { enabled: false },
     snapline: false,
@@ -18,7 +19,7 @@ export function createScheduleLf(container: HTMLElement): LogicFlow {
     stopScrollGraph: true,
     stopZoomGraph: false,
     style: {
-      bezier: {
+      line: {
         stroke: line,
         strokeWidth: 1.5
       },
@@ -38,7 +39,7 @@ export function createScheduleLf(container: HTMLElement): LogicFlow {
 
   registerTopoNodes(lf);
   lf.setTheme({
-    bezier: { stroke: line, strokeWidth: 1.5 },
+    line: { stroke: line, strokeWidth: 1.5 },
     outline: {
       stroke: "transparent",
       strokeWidth: 0,

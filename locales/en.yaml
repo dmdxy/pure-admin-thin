@@ -82,6 +82,7 @@ menus:
   multitaskGroup: Plugin Groups
   computer: Compute Schedule
   computerSchedule: Schedule Topology
+  computerScheduleDetail: Machine Detail
   collaboration: Collaboration
   collaborationTask: Task List
   collaborationTaskStat: Task Stats

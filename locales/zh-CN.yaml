@@ -82,6 +82,7 @@ menus:
   multitaskGroup: 插件分组
   computer: 算力调度
   computerSchedule: 调度拓扑
+  computerScheduleDetail: 机器详情
   collaboration: 协同任务
   collaborationTask: 任务列表
   collaborationTaskStat: 任务统计
