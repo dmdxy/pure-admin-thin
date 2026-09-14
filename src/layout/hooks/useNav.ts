@@ -52,6 +52,12 @@ export function useNav() {
       : useUserStoreHook()?.nickname;
   });
 
+  /** 登录用户名（与展示昵称分开，供用户信息卡片使用） */
+  const loginUsername = computed(() => useUserStoreHook()?.username ?? "");
+
+  /** 当前登录用户的角色 */
+  const userRoles = computed(() => useUserStoreHook()?.roles ?? []);
+
   /** 设置国际化选中后的样式 */
   const getDropdownItemStyle = computed(() => {
     return (locale, t) => {
@@ -168,6 +174,8 @@ export function useNav() {
     isCollapse,
     pureApp,
     username,
+    loginUsername,
+    userRoles,
     userAvatar,
     avatarsStyle,
     tooltipEffect,

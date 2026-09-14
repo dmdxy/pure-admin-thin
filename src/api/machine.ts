@@ -470,3 +470,12 @@ export function importMachinePlugins(file: File) {
     headers: { "Content-Type": "multipart/form-data" }
   });
 }
+
+/** 获取任务操作日志 */
+export const getMachineTaskOpLog = (params: {
+  taskId: number | string;
+  currentPage?: number;
+  pageSize?: number;
+}) => {
+  return http.request<any>("get", "/machine/task/oplog/page", { params });
+};

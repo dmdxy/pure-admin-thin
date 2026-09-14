@@ -149,8 +149,8 @@ const filteredLogs = computed(() =>
   }
 
   &.is-on {
-    color: var(--el-color-primary);
-    background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
+    color: var(--app-on-accent-container);
+    background: var(--app-accent-container);
   }
 }
 </style>

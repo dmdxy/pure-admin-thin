@@ -462,14 +462,14 @@ async function handleDeleteProcess(row: ProjectProcess) {
 
   &:hover {
     background: var(--el-fill-color-light);
-    border-color: var(--el-color-primary-light-5);
+    border-color: var(--app-accent-border);
   }
 
   &.is-active {
     font-weight: 600;
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary);
+    color: var(--app-on-accent-container);
+    background: var(--app-accent-container);
+    border-color: var(--app-accent-border);
   }
 
   &.is-disabled {
@@ -512,7 +512,7 @@ async function handleDeleteProcess(row: ProjectProcess) {
   border-radius: var(--pure-radius-small);
 
   &:focus-visible {
-    outline: 2px solid var(--el-color-primary);
+    outline: 2px solid var(--app-focus-ring);
     outline-offset: 1px;
   }
 
@@ -562,7 +562,7 @@ async function handleDeleteProcess(row: ProjectProcess) {
   height: 26px;
   padding: 0;
   font-weight: 400;
-  color: var(--el-color-primary);
+  color: var(--app-accent-foreground);
 
   :deep(svg) {
     width: 14px;
@@ -571,8 +571,8 @@ async function handleDeleteProcess(row: ProjectProcess) {
 
   &:hover,
   &:focus-visible {
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-7);
+    color: var(--app-accent-foreground);
+    background: var(--app-hover-surface);
   }
 
   &--delete:hover,

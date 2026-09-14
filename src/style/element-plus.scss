@@ -43,6 +43,25 @@
   }
 }
 
+/* Solid controls use a role with a separately verified foreground. */
+.el-button--primary:not(.is-plain, .is-link, .is-text) {
+  --el-button-bg-color: var(--app-primary-solid);
+  --el-button-border-color: var(--app-primary-solid);
+  --el-button-text-color: var(--app-on-primary);
+  --el-button-hover-text-color: var(--app-on-primary);
+  --el-button-hover-bg-color: var(--app-primary-solid);
+  --el-button-hover-border-color: var(--app-primary-solid);
+  --el-button-active-text-color: var(--app-on-primary);
+  --el-button-active-bg-color: var(--app-primary-solid);
+  --el-button-active-border-color: var(--app-primary-solid);
+}
+
+.el-tag.el-tag--primary.el-tag--dark {
+  --el-tag-bg-color: var(--app-primary-solid);
+  --el-tag-border-color: var(--app-primary-solid);
+  --el-tag-text-color: var(--app-on-primary);
+}
+
 .pure-dialog {
   .el-dialog__header.show-close {
     padding-right: 16px;

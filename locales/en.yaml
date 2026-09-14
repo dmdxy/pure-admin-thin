@@ -161,3 +161,16 @@ login:
   description: Sign in with your account credentials
   remember: Remember me
   footnote: Contact the administrator to request an account
+
+user:
+  userMenu: User menu
+  username: Username
+  rolesLabel: User roles
+  roleSeparator: ", "
+  roles:
+    admin: Administrator
+    common: Common user
+  noRole: No role
+  unknownUser: Unauthenticated user
+  systemSettings: System settings
+  operationDocs: Operation guide

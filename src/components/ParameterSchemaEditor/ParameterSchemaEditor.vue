@@ -1361,7 +1361,7 @@ defineExpose({
   }
 
   &:focus-visible {
-    outline: 2px solid var(--el-color-primary-light-5);
+    outline: 2px solid var(--app-focus-ring);
     outline-offset: 1px;
   }
 
@@ -1387,8 +1387,8 @@ defineExpose({
 }
 
 .parameter-editor__group-option.is-active .parameter-editor__group-count {
-  color: var(--el-color-primary);
-  background: var(--el-color-primary-light-9);
+  color: var(--app-on-accent-container);
+  background: var(--app-accent-container);
 }
 
 .parameter-editor__table-frame {

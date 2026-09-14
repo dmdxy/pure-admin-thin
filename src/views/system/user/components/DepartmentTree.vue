@@ -292,8 +292,8 @@ function toggleExpansion() {
 :deep(
   .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content
 ) {
-  color: var(--el-color-primary);
-  background: var(--el-color-primary-light-9);
+  color: var(--app-on-accent-container);
+  background: var(--app-accent-container);
 }
 
 :global(html.dark) .department-panel {

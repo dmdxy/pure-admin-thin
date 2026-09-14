@@ -199,18 +199,18 @@
   }
 
   .chrome-tab__bg {
-    color: var(--el-color-primary-light-9) !important;
+    color: var(--app-accent-container) !important;
   }
 
   .tag-title {
-    color: var(--el-color-primary) !important;
+    color: var(--app-on-accent-container) !important;
   }
 
   .chrome-close-btn {
-    color: var(--el-color-primary);
+    color: var(--app-accent-foreground);
 
     &:hover {
-      background-color: var(--el-color-primary);
+      background-color: var(--app-hover-surface);
     }
   }
 

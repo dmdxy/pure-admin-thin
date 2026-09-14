@@ -123,9 +123,9 @@ function selectIcon(icon: string) {
 
   &:hover,
   &.is-selected {
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary);
+    color: var(--app-accent-foreground);
+    background: var(--app-accent-container);
+    border-color: var(--app-accent-border);
   }
 }
 

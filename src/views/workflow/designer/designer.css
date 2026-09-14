@@ -9,10 +9,10 @@
   --wf-text: var(--el-text-color-primary);
   --wf-muted: var(--el-text-color-regular);
   --wf-dim: var(--el-text-color-secondary);
-  --wf-primary: var(--el-color-primary);
-  --wf-accent: var(--el-color-primary);
-  --wf-brand-soft: var(--el-color-primary-light-9);
-  --wf-input: var(--el-color-primary);
+  --wf-primary: var(--app-primary-solid);
+  --wf-accent: var(--app-accent-foreground);
+  --wf-brand-soft: var(--app-accent-container);
+  --wf-input: var(--app-accent-foreground);
   --wf-algo: var(--el-color-success);
   --wf-ctrl: var(--el-color-warning);
   --wf-output: var(--el-color-info);
@@ -37,7 +37,7 @@
   --wf-bar-bg: #ffffff;
   --wf-bar-border: #e5e7eb;
   --wf-bar-hover: #f7f8fa;
-  --wf-pick-on: var(--el-color-primary-light-9);
+  --wf-pick-on: var(--app-accent-container);
   --wf-menu-hover: #f7f8fa;
   --wf-shadow: color-mix(
     in srgb,

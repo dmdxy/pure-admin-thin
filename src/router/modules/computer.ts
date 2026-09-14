@@ -12,18 +12,17 @@ export default {
     {
       path: "/computer/schedule/index",
       name: "ComputerSchedule",
-      component: () => import("@/views/computer/schedule/index.vue"),
-      meta: {
-        title: $t("menus.computerSchedule")
-      }
+      component: () => import("@/views/computer/schedule/SchedulePage.vue"),
+      meta: { title: $t("menus.computerSchedule") }
     },
     {
-      path: "/computer/schedule/detail/:kind/:id",
+      path: "/computer/schedule/detail/:kind(schedule|engine)/:id",
       name: "ComputerScheduleDetail",
-      component: () => import("@/views/computer/schedule/detail/index.vue"),
+      component: () => import("@/views/computer/schedule/SchedulePage.vue"),
       meta: {
         title: $t("menus.computerScheduleDetail"),
-        showLink: false
+        showLink: false,
+        activePath: "/computer/schedule/index"
       }
     }
   ]

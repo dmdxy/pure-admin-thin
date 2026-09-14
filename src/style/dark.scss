@@ -21,10 +21,12 @@ html.dark {
   --pure-theme-sub-menu-bg: var(--el-bg-color) !important;
   --pure-theme-sidebar-logo: var(--el-bg-color) !important;
   --pure-theme-menu-text: rgb(255 255 255 / 65%) !important;
-  --pure-theme-menu-title-hover: #fff;
-  --pure-theme-menu-hover: rgb(255 255 255 / 12%);
-  --pure-theme-sub-menu-active-text: var(--el-color-primary);
-  --pure-theme-menu-active-before: var(--el-color-primary);
+  --pure-theme-menu-title-hover: var(--app-accent-foreground);
+  --pure-theme-menu-hover: var(--app-hover-surface);
+  --pure-theme-sub-menu-active-text: var(--app-accent-foreground);
+  --pure-theme-menu-active-before: var(--app-accent-foreground);
+  --pure-theme-menu-active-bg: var(--app-accent-container) !important;
+  --pure-theme-menu-active-text: var(--app-on-accent-container) !important;
   --pure-theme-logo-title: rgb(255 255 255 / 85%);
 
   .navbar,

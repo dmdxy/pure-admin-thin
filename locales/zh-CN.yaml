@@ -161,3 +161,16 @@ login:
   description: 请使用账号密码登录系统
   remember: 记住我
   footnote: 如需开通账号，请联系系统管理员
+
+user:
+  userMenu: 用户菜单
+  username: 用户名
+  rolesLabel: 用户角色
+  roleSeparator: "、"
+  roles:
+    admin: 管理员
+    common: 普通用户
+  noRole: 暂无角色
+  unknownUser: 未登录用户
+  systemSettings: 系统设置
+  operationDocs: 操作文档

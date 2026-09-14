@@ -1,26 +1,18 @@
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  shallowRef,
-  watch
-} from "vue";
-import { useResizeObserver } from "@vueuse/core";
-import echarts from "@/plugins/echarts";
-import type { ECharts } from "echarts/core";
+import { computed } from "vue";
 import CalendarLine from "~icons/ri/calendar-todo-line";
-import ComputerLine from "~icons/ri/computer-line";
+import CpuLine from "~icons/ri/cpu-line";
 import Database2Line from "~icons/ri/database-2-line";
+import GlobalLine from "~icons/ri/global-line";
 import HardDrive2Line from "~icons/ri/hard-drive-2-line";
-import LineChartLine from "~icons/ri/line-chart-line";
+
 import {
   buildDeviceInfoView,
-  buildTrendSeries,
-  type DetailMachine
-} from "../../data";
+  resolveMachineRoles,
+  type DetailMachine,
+  type FeatureTag
+} from "../../model";
+import EnginePolylinePanel from "@/views/computer/schedule/components/panels/EnginePolylinePanel.vue";
 
 defineOptions({ name: "ScheduleDeviceInfoTab" });
 
@@ -28,191 +20,180 @@ const props = defineProps<{
   machine: DetailMachine;
 }>();
 
-type DayKey = "today" | "yesterday" | "before";
-
-const dayOptions: Array<{ key: DayKey; label: string }> = [
-  { key: "before", label: "前天" },
-  { key: "yesterday", label: "昨天" },
-  { key: "today", label: "今天" }
-];
-
-const hourOptions = Array.from({ length: 24 }, (_, index) => ({
-  value: index,
-  label: `${index}时`
-}));
-
-const activeDay = ref<DayKey>("today");
-const activeHour = ref(18);
-const chartRef = ref<HTMLElement | null>(null);
-const chartInst = shallowRef<ECharts | null>(null);
-
 const info = computed(() => buildDeviceInfoView(props.machine));
+const roles = computed(() => resolveMachineRoles(props.machine));
+const isSchedule = computed(() => roles.value.isSchedule);
+const isEngine = computed(() => roles.value.isEngine);
+const showTrend = computed(() => isEngine.value);
 
-const statusCards = computed(() => [
-  {
-    key: "schedule",
-    label: "调度状态",
-    value: info.value.scheduleStatus,
-    tone: "blue" as const,
-    icon: CalendarLine
-  },
-  {
-    key: "engine",
-    label: "引擎状态",
-    value: info.value.engineStatus,
-    tone: "violet" as const,
-    icon: ComputerLine,
-    status: info.value.engineStatusTone
-  },
-  {
-    key: "db",
-    label: "数据库状态",
-    value: info.value.dbStatus,
-    tone: "amber" as const,
-    icon: HardDrive2Line,
-    status: info.value.dbStatusTone
-  },
-  {
-    key: "cache",
-    label: "缓存可用空间",
-    value: info.value.cacheAvailableText,
-    tone: "green" as const,
-    icon: Database2Line
+const statusCards = computed(() => {
+  if (isSchedule.value && !isEngine.value) {
+    return [
+      {
+        key: "schedule",
+        label: "调度状态",
+        value: info.value.scheduleStatus,
+        tone: "blue" as const,
+        icon: CalendarLine,
+        status: info.value.scheduleStatusTone
+      },
+      {
+        key: "db",
+        label: "数据库微服务状态",
+        value: info.value.dbStatus,
+        tone: "amber" as const,
+        icon: Database2Line,
+        status: info.value.dbStatusTone
+      },
+      {
+        key: "dbIp",
+        label: "数据库微服务 IP",
+        value: info.value.dbIp,
+        tone: "blue" as const,
+        icon: GlobalLine,
+        mono: true
+      },
+      {
+        key: "engineNum",
+        label: "引擎数量",
+        value: info.value.engineNum,
+        tone: "violet" as const,
+        icon: CpuLine,
+        metric: true
+      }
+    ];
   }
-]);
 
+  if (isEngine.value && !isSchedule.value) {
+    return [
+      {
+        key: "engine",
+        label: "引擎状态",
+        value: info.value.engineStatus,
+        tone: "violet" as const,
+        icon: CpuLine,
+        status: info.value.engineStatusTone
+      },
+      {
+        key: "memorySize",
+        label: "内存大小",
+        value: info.value.memorySize,
+        tone: "amber" as const,
+        icon: HardDrive2Line,
+        metric: true
+      },
+      {
+        key: "threadCount",
+        label: "线程数量",
+        value: info.value.threadCount,
+        tone: "blue" as const,
+        icon: CpuLine,
+        metric: true
+      },
+      {
+        key: "cache",
+        label: "缓存可用空间",
+        value: info.value.cacheAvailableText,
+        tone: "green" as const,
+        icon: Database2Line,
+        metric: true
+      }
+    ];
+  }
+
+  return [
+    {
+      key: "schedule",
+      label: "调度状态",
+      value: info.value.scheduleStatus,
+      tone: "blue" as const,
+      icon: CalendarLine,
+      status: info.value.scheduleStatusTone
+    },
+    {
+      key: "engine",
+      label: "引擎状态",
+      value: info.value.engineStatus,
+      tone: "violet" as const,
+      icon: CpuLine,
+      status: info.value.engineStatusTone
+    },
+    {
+      key: "db",
+      label: "数据库微服务状态",
+      value: info.value.dbStatus,
+      tone: "amber" as const,
+      icon: Database2Line,
+      status: info.value.dbStatusTone
+    },
+    {
+      key: "dbIp",
+      label: "数据库微服务 IP",
+      value: info.value.dbIp,
+      tone: "blue" as const,
+      icon: GlobalLine,
+      mono: true
+    }
+  ];
+});
 const gauges = computed(() => [
   { key: "cpu", label: "CPU", value: info.value.cpu, color: "#14b8a6" },
   { key: "gpu", label: "GPU", value: info.value.gpu, color: "#3b82f6" },
   { key: "memory", label: "内存", value: info.value.memory, color: "#8b5cf6" }
 ]);
 
-const specItems = computed(() => [
-  { key: "memorySize", label: "内存大小", value: info.value.memorySize },
-  { key: "cachePath", label: "缓存路径", value: info.value.cachePath },
-  { key: "threadCount", label: "线程数量", value: info.value.threadCount },
-  { key: "cpuFeatures", label: "CPU 特性", value: info.value.cpuFeatures },
-  { key: "maxWorkload", label: "最大工作数量", value: info.value.maxWorkload },
-  { key: "gpuFeatures", label: "GPU 特性", value: info.value.gpuFeatures }
-]);
+type SpecItem = {
+  key: string;
+  label: string;
+  value?: string;
+  tags?: FeatureTag[];
+  mono?: boolean;
+  span?: number;
+};
 
+const specItems = computed<SpecItem[]>(() => {
+  const items: SpecItem[] = [
+    {
+      key: "cachePath",
+      label: "缓存路径",
+      value: info.value.cachePath,
+      mono: true,
+      span: 2
+    },
+    { key: "gpuNum", label: "GPU 数量", value: info.value.gpuNum },
+    {
+      key: "maxWorkload",
+      label: "最大工作数量",
+      value: info.value.maxWorkload
+    },
+    { key: "cpuFeatures", label: "CPU 特性", tags: info.value.cpuFeatures },
+    { key: "gpuFeatures", label: "GPU 特性", tags: info.value.gpuFeatures }
+  ];
+
+  if (isSchedule.value && isEngine.value) {
+    items.splice(
+      1,
+      0,
+      { key: "engineNum", label: "引擎数量", value: info.value.engineNum },
+      { key: "memorySize", label: "内存大小", value: info.value.memorySize },
+      { key: "threadCount", label: "线程数量", value: info.value.threadCount },
+      {
+        key: "cacheAvailable",
+        label: "缓存可用空间",
+        value: info.value.cacheAvailableText
+      }
+    );
+  }
+
+  return items;
+});
 function formatPercent(value: number) {
   return `${value.toFixed(2)}%`;
 }
 
-function resetTrendFilters() {
-  activeDay.value = "today";
-  activeHour.value = 18;
+function isEmptyValue(value?: string) {
+  return !value || value === "—";
 }
-
-function renderChart() {
-  const el = chartRef.value;
-  if (!el) return;
-  if (!chartInst.value) {
-    chartInst.value = echarts.init(el);
-  }
-  const series = buildTrendSeries(
-    `${props.machine.id}-${activeDay.value}`,
-    activeHour.value
-  );
-  chartInst.value.setOption(
-    {
-      color: ["#14b8a6", "#3b82f6", "#8b5cf6"],
-      tooltip: {
-        trigger: "axis",
-        valueFormatter: (value: number) => `${value}%`
-      },
-      legend: {
-        top: 0,
-        data: ["CPU", "GPU", "内存"],
-        itemWidth: 10,
-        itemHeight: 10,
-        textStyle: { color: "var(--el-text-color-regular)", fontSize: 12 }
-      },
-      grid: {
-        left: 36,
-        right: 16,
-        top: 36,
-        bottom: 28
-      },
-      xAxis: {
-        type: "category",
-        boundaryGap: false,
-        data: series.labels,
-        axisLine: { lineStyle: { color: "var(--el-border-color-lighter)" } },
-        axisLabel: { color: "var(--el-text-color-placeholder)", fontSize: 11 },
-        axisTick: { show: false }
-      },
-      yAxis: {
-        type: "value",
-        min: 0,
-        max: 100,
-        interval: 20,
-        axisLabel: {
-          color: "var(--el-text-color-placeholder)",
-          fontSize: 11,
-          formatter: "{value}%"
-        },
-        splitLine: {
-          lineStyle: {
-            type: "dashed",
-            color: "var(--el-border-color-extra-light)"
-          }
-        }
-      },
-      series: [
-        {
-          name: "CPU",
-          type: "line",
-          smooth: true,
-          showSymbol: false,
-          data: series.cpu
-        },
-        {
-          name: "GPU",
-          type: "line",
-          smooth: true,
-          showSymbol: false,
-          data: series.gpu
-        },
-        {
-          name: "内存",
-          type: "line",
-          smooth: true,
-          showSymbol: false,
-          data: series.memory
-        }
-      ]
-    },
-    true
-  );
-}
-
-onMounted(async () => {
-  await nextTick();
-  renderChart();
-});
-
-onUnmounted(() => {
-  chartInst.value?.dispose();
-  chartInst.value = null;
-});
-
-watch(
-  () =>
-    [
-      props.machine.id,
-      props.machine.kind,
-      props.machine.status,
-      activeDay.value,
-      activeHour.value
-    ].join("/"),
-  () => nextTick(renderChart)
-);
-
-useResizeObserver(chartRef, () => {
-  chartInst.value?.resize();
-});
 </script>
 
 <template>
@@ -224,15 +205,18 @@ useResizeObserver(chartRef, () => {
         class="status-metric"
         :class="`tone-${card.tone}`"
       >
-        <span class="status-metric__icon">
-          <IconifyIconOffline :icon="card.icon" />
-        </span>
-        <span class="status-metric__label">{{ card.label }}</span>
+        <div class="status-metric__heading">
+          <span class="status-metric__icon">
+            <IconifyIconOffline :icon="card.icon" />
+          </span>
+          <span class="status-metric__label">{{ card.label }}</span>
+        </div>
         <strong
           class="status-metric__value"
           :class="[
-            card.key === 'cache' ? 'is-metric' : 'is-status',
-            card.status ? `is-${card.status}` : undefined
+            card.metric ? 'is-metric' : undefined,
+            card.mono ? 'is-mono' : undefined,
+            card.status ? ['is-status', `is-${card.status}`] : undefined
           ]"
         >
           {{ card.value }}
@@ -240,18 +224,18 @@ useResizeObserver(chartRef, () => {
       </div>
     </section>
 
-    <section class="panel-card">
-      <header class="panel-card__head">
+    <section v-if="isEngine" class="resource-section">
+      <header class="resource-section__head">
         <h3>资源与规格</h3>
       </header>
 
-      <div class="gauge-row">
-        <div v-for="gauge in gauges" :key="gauge.key" class="gauge-item">
+      <div class="gauge-cards">
+        <div v-for="gauge in gauges" :key="gauge.key" class="gauge-card">
           <el-progress
             type="circle"
             :percentage="gauge.value"
-            :width="108"
-            :stroke-width="10"
+            :width="88"
+            :stroke-width="8"
             :color="gauge.color"
           >
             <template #default>
@@ -265,43 +249,62 @@ useResizeObserver(chartRef, () => {
       </div>
 
       <div class="spec-grid">
-        <div v-for="item in specItems" :key="item.key" class="spec-item">
-          <span>{{ item.label }}</span>
-          <strong :title="item.value">{{ item.value }}</strong>
+        <div
+          v-for="item in specItems"
+          :key="item.key"
+          class="spec-item"
+          :class="{ 'is-span-2': item.span === 2 }"
+        >
+          <span class="spec-item__label">{{ item.label }}</span>
+          <div v-if="item.tags" class="feature-tags">
+            <template v-if="item.tags.length">
+              <span
+                v-for="feature in item.tags"
+                :key="feature.name"
+                class="feature-tag"
+                :class="{ 'is-disabled': !feature.active }"
+              >
+                {{ feature.name }}
+              </span>
+            </template>
+            <span v-else class="empty-text">—</span>
+          </div>
+          <strong
+            v-else
+            :class="{
+              'is-mono': item.mono,
+              'is-empty': isEmptyValue(item.value)
+            }"
+            :title="item.value"
+          >
+            {{ item.value }}
+          </strong>
         </div>
       </div>
     </section>
 
-    <section class="panel-card trend-card">
-      <header class="panel-card__head trend-head">
-        <h3>
-          <IconifyIconOffline :icon="LineChartLine" />
-          引擎性能趋势
-        </h3>
-        <div class="trend-filters">
-          <div class="day-tabs">
-            <button
-              v-for="day in dayOptions"
-              :key="day.key"
-              type="button"
-              :class="{ active: activeDay === day.key }"
-              @click="activeDay = day.key"
-            >
-              {{ day.label }}
-            </button>
-          </div>
-          <el-select v-model="activeHour" class="hour-select" size="small">
-            <el-option
-              v-for="hour in hourOptions"
-              :key="hour.value"
-              :label="hour.label"
-              :value="hour.value"
-            />
-          </el-select>
-          <el-button size="small" @click="resetTrendFilters">重置</el-button>
-        </div>
-      </header>
-      <div ref="chartRef" class="trend-chart" />
+    <section
+      v-else
+      class="resource-placeholder"
+      aria-label="当前机器未绑定引擎"
+    >
+      <div class="resource-placeholder__content">
+        <span class="resource-placeholder__icon">
+          <IconifyIconOffline :icon="CpuLine" />
+        </span>
+        <strong>当前机器未绑定引擎</strong>
+      </div>
+    </section>
+
+    <section v-if="showTrend" class="trend-section">
+      <EnginePolylinePanel
+        :key="machine.ip"
+        :visible="showTrend"
+        :engine-ip="machine.ip"
+        :source="machine.source"
+        plain
+        class="trend-chart-panel"
+      />
     </section>
   </div>
 </template>
@@ -311,6 +314,8 @@ useResizeObserver(chartRef, () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  min-height: 0;
   padding: 4px 0 8px;
 }
 
@@ -323,11 +328,14 @@ useResizeObserver(chartRef, () => {
 .status-metric {
   --card-accent: #3b82f6;
 
+  box-sizing: border-box;
   display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
   min-width: 0;
-  padding: 14px 16px;
+  min-height: 92px;
+  padding: 10px 14px;
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 10px;
@@ -350,46 +358,78 @@ useResizeObserver(chartRef, () => {
   }
 }
 
+.status-metric__heading {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
 .status-metric__icon {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   color: var(--card-accent);
   background: color-mix(in srgb, var(--card-accent) 14%, var(--el-bg-color));
   border: 1px solid color-mix(in srgb, var(--card-accent) 22%, transparent);
-  border-radius: 9px;
+  border-radius: 7px;
 
   :deep(svg) {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
   }
 }
 
 .status-metric__label {
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--el-text-color-regular);
   white-space: nowrap;
 }
 
 .status-metric__value {
+  align-self: flex-start;
   min-width: 0;
+  max-width: 100%;
+  margin-top: auto;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
+  line-height: 20px;
   color: var(--el-text-color-primary);
   white-space: nowrap;
 
   &.is-metric {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &.is-status {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &.is-mono {
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    font-size: 12.5px;
+    font-weight: 500;
   }
 
   &.is-running {
     color: #16a34a;
+  }
+
+  &.is-busy {
+    color: var(--el-color-warning);
   }
 
   &.is-stopped {
@@ -405,31 +445,63 @@ useResizeObserver(chartRef, () => {
   }
 }
 
-.panel-card {
-  padding: 16px 18px 18px;
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
+.resource-placeholder {
+  box-sizing: border-box;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 180px;
+  padding: 20px;
+  background: var(--el-fill-color-blank);
+  border: 1px dashed var(--el-border-color);
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
 }
 
-.panel-card__head {
+.resource-placeholder__content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.resource-placeholder__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--el-text-color-placeholder);
+  background: var(--el-fill-color-light);
+  border-radius: 7px;
+}
+
+.resource-placeholder__content strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+}
+
+.resource-section {
+  padding: 0 2px;
+}
+
+.resource-section__head {
   display: flex;
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 12px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--el-border-color-extra-light);
+  margin-bottom: 12px;
 
   h3 {
     display: inline-flex;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
     margin: 0;
     font-size: 14px;
-    font-weight: 650;
+    font-weight: 600;
+    line-height: 20px;
     color: var(--el-text-color-primary);
+    letter-spacing: 0.01em;
 
     :deep(svg) {
       width: 16px;
@@ -439,24 +511,17 @@ useResizeObserver(chartRef, () => {
   }
 }
 
-.gauge-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 48px;
-  align-items: center;
-  justify-content: space-evenly;
-  padding: 12px 8px 16px;
-  margin-bottom: 18px;
-  background: var(--el-fill-color-blank);
-  border: 1px solid var(--el-border-color-extra-light);
-  border-radius: 10px;
+.gauge-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.gauge-item {
+.gauge-card {
   display: grid;
-  flex: 0 0 auto;
   place-items: center;
-  padding: 4px 0;
+  padding: 8px 0 14px;
 }
 
 .gauge-center {
@@ -480,7 +545,7 @@ useResizeObserver(chartRef, () => {
 .spec-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px 24px;
 }
 
 .spec-item {
@@ -488,13 +553,15 @@ useResizeObserver(chartRef, () => {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  padding: 12px 14px;
-  background: var(--el-fill-color-blank);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  padding: 10px 0;
+  background: transparent;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 
-  span {
+  &.is-span-2 {
+    grid-column: span 2;
+  }
+
+  .spec-item__label {
     font-size: 12px;
     color: var(--el-text-color-secondary);
   }
@@ -506,62 +573,87 @@ useResizeObserver(chartRef, () => {
     font-weight: 600;
     color: var(--el-text-color-primary);
     white-space: nowrap;
-  }
-}
 
-.trend-head {
-  flex-wrap: wrap;
-  row-gap: 10px;
-}
+    &.is-mono {
+      font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-weight: 500;
+    }
 
-.trend-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.day-tabs {
-  display: inline-flex;
-  padding: 2px;
-  background: var(--el-fill-color-light);
-  border-radius: 8px;
-
-  button {
-    height: 28px;
-    padding: 0 12px;
-    font-size: 12px;
-    color: var(--el-text-color-regular);
-    cursor: pointer;
-    background: transparent;
-    border: 0;
-    border-radius: 6px;
-
-    &.active {
-      font-weight: 600;
-      color: var(--el-color-primary);
-      background: var(--el-bg-color);
-      box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+    &.is-empty {
+      font-weight: 500;
+      color: var(--el-text-color-placeholder);
     }
   }
 }
 
-.hour-select {
-  width: 88px;
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
 }
 
-.trend-chart {
+.feature-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-size: 11px;
+  color: var(--el-color-primary);
+  white-space: nowrap;
+  background: var(--el-color-primary-light-9);
+  border-radius: 4px;
+
+  &.is-disabled {
+    color: var(--el-text-color-placeholder);
+    text-decoration: line-through;
+    background: var(--el-fill-color-light);
+  }
+}
+
+.empty-text {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+}
+
+.trend-section {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 360px;
+  min-height: 360px;
+}
+
+.trend-chart-panel {
+  display: flex !important;
+  flex: 1;
+  flex-direction: column;
   width: 100%;
-  height: 260px;
+  height: 100%;
+  min-height: 0;
+
+  :deep(.panel-header) {
+    flex-shrink: 0;
+    height: 28px;
+    margin-bottom: 8px;
+  }
+
+  :deep(.chart) {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 0;
+    min-height: 0;
+  }
 }
 
 @media (width <= 1100px) {
   .status-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .gauge-row {
-    gap: 28px;
   }
 
   .spec-grid {
@@ -570,12 +662,22 @@ useResizeObserver(chartRef, () => {
 }
 
 @media (width <= 640px) {
-  .status-strip {
-    grid-template-columns: 1fr;
-  }
-
+  .status-strip,
+  .gauge-cards,
   .spec-grid {
     grid-template-columns: 1fr;
   }
+
+  .spec-item.is-span-2 {
+    grid-column: auto;
+  }
+}
+
+.resource-section__head h3::before {
+  width: 3px;
+  height: 14px;
+  content: "";
+  background: var(--app-accent-foreground, var(--el-color-primary));
+  border-radius: 2px;
 }
 </style>

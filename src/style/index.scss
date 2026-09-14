@@ -26,10 +26,10 @@
   /* switch关闭状态下的color 需要时可取用 */
   --pure-switch-off-color: #a6a6a6;
 
-  /* 导航主题只维护底色、主色和文字色，其余旧变量由 theme.scss 派生 */
+  /* 导航底色和文字色独立；强调状态由 theme.scss 的语义角色派生。 */
   --pure-menu-background: #fff;
   --pure-menu-text-color: #475569;
-  --pure-menu-active-text-color: var(--el-color-primary);
+  --pure-menu-active-text-color: var(--app-accent-foreground);
   --pure-theme-logo-title: #000000d9;
 }
 

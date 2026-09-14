@@ -57,8 +57,8 @@ onMounted(() => {
         :base-path="route.path"
       />
     </el-menu>
-    <!-- 顶部菜单无侧栏，用户入口留在右侧 -->
-    <LayHeaderActions show-user @translated="menuRef?.handleResize()" />
+    <!-- 顶部菜单右侧仅保留操作项，用户入口统一使用用户区 -->
+    <LayHeaderActions @translated="menuRef?.handleResize()" />
   </div>
 </template>
 

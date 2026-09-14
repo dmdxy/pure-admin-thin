@@ -669,14 +669,14 @@ watch(
 
   &:hover {
     background: var(--el-fill-color-light);
-    border-color: var(--el-color-primary-light-5);
+    border-color: var(--app-accent-border);
   }
 
   &.is-active {
     font-weight: 600;
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
-    border-color: var(--el-color-primary);
+    color: var(--app-on-accent-container);
+    background: var(--app-accent-container);
+    border-color: var(--app-accent-border);
   }
 
   &.is-disabled {
@@ -719,7 +719,7 @@ watch(
   border-radius: var(--pure-radius-small);
 
   &:focus-visible {
-    outline: 2px solid var(--el-color-primary);
+    outline: 2px solid var(--app-focus-ring);
     outline-offset: 1px;
   }
 
@@ -768,7 +768,7 @@ watch(
   width: 26px;
   height: 26px;
   padding: 0;
-  color: var(--el-color-primary);
+  color: var(--app-accent-foreground);
 
   :deep(svg) {
     width: 14px;
@@ -777,8 +777,8 @@ watch(
 
   &:hover,
   &:focus-visible {
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-7);
+    color: var(--app-accent-foreground);
+    background: var(--app-hover-surface);
   }
 
   &--delete {

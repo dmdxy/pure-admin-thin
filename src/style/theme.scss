@@ -3,13 +3,23 @@
  * --pure-menu-background、--el-color-primary、--pure-menu-text-color。
  */
 :root {
+  /* Runtime values are calculated from the brand seed for the active mode. */
+  --app-primary-solid: #034ea2;
+  --app-on-primary: #fff;
+  --app-accent-foreground: #034ea2;
+  --app-accent-container: #e0edf9;
+  --app-on-accent-container: #034ea2;
+  --app-accent-border: #8cb7df;
+  --app-hover-surface: #f0f6fc;
+  --app-focus-ring: #034ea2;
   --pure-theme-menu-bg: var(--pure-menu-background);
   --pure-theme-sub-menu-bg: var(--pure-menu-background);
   --pure-theme-sidebar-logo: var(--pure-menu-background);
   --pure-theme-menu-text: var(--pure-menu-text-color);
-  --pure-theme-sub-menu-active-text: var(--pure-menu-active-text-color);
-  --pure-theme-menu-title-hover: var(--pure-menu-active-text-color);
-  --pure-theme-menu-active-before: var(--el-color-primary);
-  --pure-theme-menu-active-bg: var(--el-color-primary-light-8);
-  --pure-theme-menu-hover: var(--el-color-primary-light-9);
+  --pure-theme-sub-menu-active-text: var(--app-accent-foreground);
+  --pure-theme-menu-title-hover: var(--app-accent-foreground);
+  --pure-theme-menu-active-before: var(--app-accent-foreground);
+  --pure-theme-menu-active-bg: var(--app-accent-container);
+  --pure-theme-menu-active-text: var(--app-on-accent-container);
+  --pure-theme-menu-hover: var(--app-hover-surface);
 }
