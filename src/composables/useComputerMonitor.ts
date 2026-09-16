@@ -8,7 +8,6 @@ import {
   getDeviceDetail,
   getDeviceTopology,
   getEnginePage,
-  getScheduleNodePage,
   pushMonitorStatus,
   updateScheduleSort
 } from "@/api/computer";
@@ -18,9 +17,9 @@ import type {
   TopologySnapshot
 } from "@/types/topology";
 import {
-  buildColumnMachineGroups,
   buildDetailMachines,
   applyDeviceDetail,
+  buildColumnMachineGroups,
   mapDbStatus,
   mapEngineStatus,
   mapScheduleStatus,
@@ -35,14 +34,25 @@ const records = (res: any) => {
   const v = payload(res);
   return Array.isArray(v) ? v : v?.records || v?.list || v?.items || [];
 };
-const idOf = (kind: string, id: any, ip: string) =>
-  id != null
-    ? `${kind === "schedule" ? "sch" : "eng"}-${id}`
-    : `${kind === "schedule" ? "sch" : "eng"}-ip-${ip}`;
+const idOf = (kind: string, id: any, ip: string) => {
+  const prefix = kind === "schedule" ? "sch" : "eng";
+  const rawId =
+    id === 0 || id === "0" || id == null || id === "" ? "" : String(id);
+  if (ip) return rawId ? `${prefix}-${rawId}-${ip}` : `${prefix}-ip-${ip}`;
+  return rawId ? `${prefix}-${rawId}` : `${prefix}-unknown`;
+};
+const pickIp = (...values: unknown[]) => {
+  for (const value of values) {
+    const ip = String(value ?? "").trim();
+    if (ip) return ip;
+  }
+  return "";
+};
 
 export function useComputerMonitor() {
   const schedules = ref<ScheduleItem[]>([]);
   const engines = ref<EngineItem[]>([]);
+  const unusedEngineItems = ref<EngineItem[]>([]);
   const loading = ref(false);
   const error = ref("");
   const mockMode = ref(false);
@@ -50,9 +60,6 @@ export function useComputerMonitor() {
   const detailLoading = ref(false);
   const sseConnection = ref<any>(null);
   const clientId = ref("");
-  let detailAbort: AbortController | null = null;
-  let detailVersion = 0;
-  const freshEngineIds = ref<Set<string>>(new Set());
 
   const snapshot = computed<TopologySnapshot>(() => ({
     schedulers: schedules.value.map(
@@ -66,7 +73,7 @@ export function useComputerMonitor() {
           dbIp: s.dbIp,
           cycle: s.cycle,
           engineCount: s.boundEngineIds.length,
-          sort: 0
+          sort: s.sort ?? 0
         }) as SchedulerInfo
     ),
     engines: engines.value.map(
@@ -91,15 +98,39 @@ export function useComputerMonitor() {
   const machines = computed(() =>
     buildDetailMachines(schedules.value, engines.value)
   );
+  const unusedMachines = computed(() =>
+    buildDetailMachines([], unusedEngineItems.value)
+  );
+  const unusedEngineSnapshot = computed<EngineInfo[]>(() =>
+    unusedEngineItems.value.map(
+      e =>
+        ({
+          id: e.id,
+          name: e.name,
+          ip: e.ip,
+          status:
+            e.status === "running"
+              ? "online"
+              : e.status === "abnormal"
+                ? "warning"
+                : "offline",
+          port: e.port,
+          cachePath: e.cachePath,
+          cacheLeft: e.cacheLeft,
+          schedulerId: null
+        }) as EngineInfo
+    )
+  );
 
   function normalizeSchedule(raw: any): ScheduleItem {
+    const ip = pickIp(raw.ip, raw.scheduleIp, raw.schedule_ip);
     const bound = (raw.engineList || raw.engines || []).map((e: any) =>
-      idOf("engine", e.id, e.ip ?? String(e.id ?? e.ip))
+      idOf("engine", e.id, pickIp(e.ip, e.engineIp, e.engine_ip, e.id))
     );
     return {
-      id: idOf("schedule", raw.id, raw.ip),
-      name: raw.name || raw.ip,
-      ip: raw.ip,
+      id: idOf("schedule", raw.id, ip),
+      name: raw.name || ip,
+      ip,
       status: mapScheduleStatus(raw.status ?? raw.state),
       rawStatus: raw.status ?? raw.state,
       cycle: raw.cycle,
@@ -108,29 +139,39 @@ export function useComputerMonitor() {
       ),
       dbIp: raw.dbIp ?? raw.db_ip,
       boundEngineIds: bound,
-      rawId: Number(raw.id) || 0
+      rawId: Number(raw.id) || 0,
+      sort: Number(raw.sort) || 0
     };
   }
   function normalizeEngine(raw: any, schedulesRaw: any[]): EngineItem {
+    const ip = pickIp(raw.ip, raw.engineIp, raw.engine_ip);
     const bound = (
       raw.scheduleList ||
       raw.schedules ||
       raw.scheduleIds ||
       []
     ).map((x: any) =>
-      typeof x === "object" ? idOf("schedule", x.id, x.ip) : String(x)
+      typeof x === "object"
+        ? idOf("schedule", x.id, pickIp(x.ip, x.scheduleIp))
+        : String(x)
     );
     const parent = schedulesRaw.find(s =>
-      (s.engineList || []).some(
-        (e: any) => String(e.id ?? e.ip) === String(raw.id ?? raw.ip)
-      )
+      (s.engineList || []).some((e: any) => {
+        const engineIp = pickIp(e.ip, e.engineIp, e.engine_ip);
+        return (
+          String(e.id ?? "") === String(raw.id ?? "") ||
+          (engineIp && engineIp === ip)
+        );
+      })
     );
-    if (parent && !bound.includes(idOf("schedule", parent.id, parent.ip)))
-      bound.push(idOf("schedule", parent.id, parent.ip));
+    const parentId = parent
+      ? idOf("schedule", parent.id, pickIp(parent.ip, parent.scheduleIp))
+      : "";
+    if (parentId && !bound.includes(parentId)) bound.push(parentId);
     return {
-      id: idOf("engine", raw.id, raw.ip),
-      name: raw.name || raw.ip,
-      ip: raw.ip,
+      id: idOf("engine", raw.id, ip),
+      name: raw.name || ip,
+      ip,
       status: mapEngineStatus(raw.status ?? raw.state),
       rawStatus: raw.status ?? raw.state,
       boundScheduleIds: bound,
@@ -318,198 +359,127 @@ export function useComputerMonitor() {
         gpuFeature: { CUDA: true, TensorRT: true }
       }
     ];
+    unusedEngineItems.value = engines.value.filter(
+      engine => engine.boundScheduleIds.length === 0
+    );
   }
   async function loadData() {
     loading.value = true;
     error.value = "";
     mockMode.value = false;
     try {
-      const [topo, enginePage, schedulePage] = await Promise.all([
-        getDeviceTopology(),
-        getEnginePage({ pageSize: 0 }),
-        getScheduleNodePage({ currentPage: 1, pageSize: 0 })
-      ]);
-      const topoRows = records(topo);
-      const scheduleRows = records(schedulePage);
-      const engineRows = records(enginePage);
-      if (
-        !topoRows.length &&
-        !scheduleRows.length &&
-        !engineRows.length &&
-        (import.meta.env.DEV || import.meta.env.VITE_COMPUTER_MOCK === "true")
-      ) {
+      if (import.meta.env.VITE_COMPUTER_MOCK === "true") {
         loadMockData();
         return;
       }
-      const mergedSchedules = scheduleRows.length ? scheduleRows : topoRows;
-      const byIp = new Map<string, any>(
-        mergedSchedules.map((r: any) => [r.ip, r] as [string, any])
+      const [topo, enginePage] = await Promise.all([
+        getDeviceTopology(),
+        getEnginePage({ currentPage: 1, pageSize: 0 })
+      ]);
+      const topoRows = records(topo);
+      const engineRows = records(enginePage);
+      const normalizedEngineRows = engineRows.map((r: any) =>
+        normalizeEngine(r, topoRows)
       );
+      unusedEngineItems.value = normalizedEngineRows.filter(
+        engine => engine.boundScheduleIds.length === 0
+      );
+      const byIp = new Map<string, any>();
       topoRows.forEach((r: any) => {
-        if (!byIp.has(r.ip)) byIp.set(r.ip, r);
-        else
-          byIp.set(r.ip, {
-            ...byIp.get(r.ip),
-            ...r,
-            engineList: r.engineList || byIp.get(r.ip).engineList
-          });
+        const ip = pickIp(r.ip, r.scheduleIp, r.schedule_ip);
+        if (ip) byIp.set(ip, r);
       });
-      schedules.value = [...byIp.values()].map(normalizeSchedule);
-      engines.value = engineRows.map((r: any) =>
-        normalizeEngine(r, [...byIp.values()])
-      );
+      schedules.value = [...byIp.values()]
+        .map(normalizeSchedule)
+        .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+      engines.value = [];
       topoRows.forEach((s: any) =>
         (s.engineList || []).forEach((e: any) => {
-          if (!engines.value.some(x => x.ip === e.ip))
+          if (
+            !engines.value.some(
+              x => x.ip && x.ip === pickIp(e.ip, e.engineIp, e.engine_ip)
+            )
+          )
             engines.value.push(normalizeEngine(e, topoRows));
         })
       );
       await connectSse();
+      await pushStatus();
     } catch (e: any) {
-      if (
-        import.meta.env.DEV ||
-        import.meta.env.VITE_COMPUTER_MOCK === "true"
-      ) {
-        loadMockData();
-        error.value = "开发环境未连接后端，当前展示模拟数据";
-      } else {
-        error.value = e?.message || "加载计算机数据失败";
-        ElMessage.error(error.value);
-      }
+      error.value = e?.message || "加载计算机数据失败";
+      ElMessage.error(error.value);
     } finally {
       loading.value = false;
     }
   }
 
   async function loadColumns() {
-    if (mockMode.value) {
-      detailGroups.value = [
-        {
-          key: "cluster",
-          label: "集群机器",
-          items: machines.value.filter(m => m.group === "cluster")
-        },
-        {
-          key: "collaboration",
-          label: "多机协同机器",
-          items: machines.value.filter(m => m.group === "collaboration")
-        }
-      ];
-      return;
-    }
+    const res = await getDeviceColumn();
+    const column = payload(res);
+    detailGroups.value = buildColumnMachineGroups(
+      column,
+      schedules.value,
+      engines.value
+    );
+  }
+  async function loadDeviceDetail(machine: DetailMachine) {
     detailLoading.value = true;
     try {
-      const r = await getDeviceColumn();
-      const groups = buildColumnMachineGroups(
-        payload(r),
-        schedules.value,
-        engines.value
-      );
-      detailGroups.value = groups.some(g => g.items.length)
-        ? groups
-        : [
-            {
-              key: "cluster",
-              label: "集群机器",
-              items: machines.value.filter(m => m.group === "cluster")
-            },
-            {
-              key: "collaboration",
-              label: "多机协同机器",
-              items: machines.value.filter(m => m.group === "collaboration")
-            }
-          ];
-    } catch {
-      detailGroups.value = [];
+      const res = await getDeviceDetail({ engineIp: machine.ip });
+      const detail = payload(res);
+      return detail && typeof detail === "object"
+        ? applyDeviceDetail(machine, detail)
+        : machine;
     } finally {
       detailLoading.value = false;
     }
   }
-  async function loadDeviceDetail(machine: DetailMachine) {
-    if (mockMode.value) return machine;
-    detailAbort?.abort();
-    detailAbort = new AbortController();
-    const version = ++detailVersion;
-    try {
-      const r: any = await getDeviceDetail(
-        { engineIp: machine.ip },
-        { signal: detailAbort.signal }
-      );
-      if (version !== detailVersion) return;
-      const updated = applyDeviceDetail(machine, payload(r));
-      detailGroups.value = detailGroups.value.map(g => ({
-        ...g,
-        items: g.items.map(m => (m.id === machine.id ? updated : m))
-      }));
-      return updated;
-    } catch (e: any) {
-      if (e?.name !== "CanceledError" && e?.name !== "AbortError")
-        ElMessage.error("设备详情加载失败");
-      return machine;
-    }
-  }
-  function updateSchedule(ip: string, patch: any) {
-    const s = schedules.value.find(x => x.ip === ip);
-    if (s)
-      Object.assign(s, {
-        ...(patch.status !== undefined
-          ? { status: mapScheduleStatus(patch.status), rawStatus: patch.status }
-          : {}),
-        ...(patch.dbStatus !== undefined
-          ? { dbStatus: mapDbStatus(patch.dbStatus) }
-          : {}),
-        ...(patch.dbIp !== undefined ? { dbIp: patch.dbIp } : {})
-      });
-  }
   async function bindEngine(engineId: string, schedulerId: string) {
-    const e = engines.value.find(x => x.id === engineId);
+    const e = unusedEngineItems.value.find(x => x.id === engineId);
     const s = schedules.value.find(x => x.id === schedulerId);
     if (!e || !s) return;
     await action(
       () => attachEngine({ scheduleIp: s.ip, engineIp: e.ip }),
       "绑定成功"
     );
-    e.boundScheduleIds = [schedulerId];
   }
   async function removeUnusedEngine(engineId: string) {
-    const e = engines.value.find(x => x.id === engineId);
+    const e = unusedEngineItems.value.find(x => x.id === engineId);
     if (!e) return;
     await action(() => deleteEngine(e.ip), "删除成功");
-    engines.value = engines.value.filter(x => x.id !== engineId);
   }
   async function reorderSchedulerGroups(ids: string[]) {
     await action(
       () =>
         updateScheduleSort(
           ids.map((id, index) => ({
-            id: Number(id.replace(/^sch-/, "")),
+            id:
+              schedules.value.find(item => item.id === id)?.rawId ||
+              Number(id.replace(/^sch-/, "")),
             sort: index + 1
           }))
         ),
       "排序已保存"
     );
-    const order = new Map(ids.map((id, index) => [id, index]));
-    schedules.value.sort(
-      (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)
-    );
   }
-  function updateEngine(ip: string, patch: any) {
-    const e = engines.value.find(x => x.ip === ip);
-    if (e) {
-      Object.assign(e, {
-        ...(patch.status !== undefined
-          ? { status: mapEngineStatus(patch.status), rawStatus: patch.status }
-          : {}),
-        ...patch
-      });
-      freshEngineIds.value = new Set([...freshEngineIds.value, e.id]);
-      setTimeout(() => {
-        const next = new Set(freshEngineIds.value);
-        next.delete(e.id);
-        freshEngineIds.value = next;
-      }, 1200);
-    }
+  function isTopologyEngine(item: EngineItem) {
+    return item.boundScheduleIds.length > 0;
   }
+  async function pushStatus() {
+    if (!clientId.value) return;
+    await pushMonitorStatus({
+      clientId: clientId.value,
+      scheduleIp: schedules.value.map(x => x.ip).filter(Boolean),
+      engineIp: engines.value
+        .filter(isTopologyEngine)
+        .map(x => x.ip)
+        .filter(Boolean)
+    }).catch(() => undefined);
+  }
+  /**
+   * 只负责建立连接并用 connected 事件里的 client_id 注册订阅。
+   * 推送内容目前不落地到拓扑，engine/schedule 事件直接忽略。
+   */
   async function connectSse() {
     if (sseConnection.value) return;
     sseConnection.value = createMonitorSSE({
@@ -517,36 +487,40 @@ export function useComputerMonitor() {
       reconnectInterval: 3000,
       maxReconnectAttempts: 5,
       onMessage: (data, event) => {
+        if (String((event as any)?.type || "") !== "connected") return;
         let p: any;
         try {
           p = JSON.parse(data);
         } catch {
           return;
         }
-        const type = (event as any)?.type;
-        if (type === "connected") {
-          clientId.value = p.client_id || p.clientId || "";
-          if (clientId.value)
-            pushMonitorStatus({
-              clientId: clientId.value,
-              scheduleIp: schedules.value.map(x => x.ip),
-              engineIp: engines.value
-                .filter(x => x.boundScheduleIds.length)
-                .map(x => x.ip)
-            });
-        } else if (type === "schedule") updateSchedule(p.ip || p.scheduleIp, p);
-        else if (type === "engine") updateEngine(p.ip || p.engineIp, p);
+        const id = p?.client_id || p?.clientId || "";
+        if (!id) return;
+        clientId.value = id;
+        void pushStatus();
+      },
+      onClose() {
+        clientId.value = "";
       }
     });
   }
   function closeSse() {
     sseConnection.value?.close?.();
     sseConnection.value = null;
-    detailAbort?.abort();
+    clientId.value = "";
   }
   async function action(fn: () => Promise<any>, success = "操作成功") {
     try {
-      await fn();
+      const res = await fn();
+      if (
+        res &&
+        typeof res.code === "number" &&
+        res.code !== 0 &&
+        res.code !== 200
+      ) {
+        ElMessage.error(res.message || res.msg || "操作失败");
+        return false;
+      }
       ElMessage.success(success);
       await loadData();
       return true;
@@ -559,6 +533,8 @@ export function useComputerMonitor() {
   return {
     schedules,
     engines,
+    unusedEngineSnapshot,
+    unusedMachines,
     snapshot,
     machines,
     loading,
@@ -566,12 +542,9 @@ export function useComputerMonitor() {
     mockMode,
     detailGroups,
     detailLoading,
-    freshEngineIds,
     loadData,
     loadColumns,
     loadDeviceDetail,
-    updateSchedule,
-    updateEngine,
     bindEngine,
     removeUnusedEngine,
     reorderSchedulerGroups,

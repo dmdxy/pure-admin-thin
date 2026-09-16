@@ -2,9 +2,7 @@
 import { computed } from "vue";
 import SchedulerNode from "@/components/topology/SchedulerNode.vue";
 import EngineNode from "@/components/topology/EngineNode.vue";
-import NodeHoverCard, {
-  type NodeHoverAction
-} from "@/components/topology/NodeHoverCard.vue";
+import type { NodeHoverAction } from "@/components/topology/NodeHoverCard.vue";
 import type { EngineInfo, SchedulerInfo } from "@/types/topology";
 import {
   BRANCH_HEIGHT,
@@ -32,6 +30,8 @@ const props = defineProps<{
   appearanceIndex?: number;
   /** 处于“数据已更新”新鲜期的引擎 id 集合（引擎图标展示更新指示） */
   freshEngineIds?: Set<string>;
+  /** 处于“数据已更新”新鲜期的调度 id 集合 */
+  freshSchedulerIds?: Set<string>;
   /** 刚完成绑定的引擎 id 集合：使用即时入场，避免复用首次加载的长延迟 */
   instantEngineIds?: Set<string>;
   /** 当前是否有分组正在排序拖拽 */
@@ -258,6 +258,7 @@ function onGroupDrop(event: DragEvent) {
     <div
       v-if="scheduler"
       class="scheduler-wrap"
+      :class="{ 'is-fresh': freshSchedulerIds?.has(scheduler.id) }"
       :style="{
         left: `${group.scheduler.x}px`,
         top: `${group.scheduler.y}px`,
@@ -266,13 +267,12 @@ function onGroupDrop(event: DragEvent) {
         animationDelay: delays.scheduler
       }"
     >
-      <NodeHoverCard
-        kind="schedule"
+      <SchedulerNode
         :scheduler="scheduler"
+        :fresh="freshSchedulerIds?.has(scheduler.id)"
+        @open="onScheduleOpen"
         @action="onScheduleAction"
-      >
-        <SchedulerNode :scheduler="scheduler" @open="onScheduleOpen" />
-      </NodeHoverCard>
+      />
     </div>
     <!-- 引擎 -->
     <div
@@ -288,17 +288,12 @@ function onGroupDrop(event: DragEvent) {
         animationDelay: delays.engine(index, engine.id)
       }"
     >
-      <NodeHoverCard
-        kind="engine"
+      <EngineNode
         :engine="engine"
+        :fresh="freshEngineIds?.has(engine.id)"
+        @open="onEngineOpen(engine.id)"
         @action="onEngineAction(engine.id, $event)"
-      >
-        <EngineNode
-          :engine="engine"
-          :fresh="freshEngineIds?.has(engine.id)"
-          @open="onEngineOpen(engine.id)"
-        />
-      </NodeHoverCard>
+      />
     </div>
   </div>
 </template>

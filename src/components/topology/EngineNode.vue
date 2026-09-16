@@ -8,10 +8,16 @@
  */
 import { computed } from "vue";
 import ServerIcon from "@/components/icons/ServerIcon.vue";
+import NodeHoverCard, {
+  type NodeHoverAction
+} from "@/components/topology/NodeHoverCard.vue";
 import { STATUS_META, type EngineInfo } from "@/types/topology";
 
 const props = defineProps<{ engine: EngineInfo; fresh?: boolean }>();
-const emit = defineEmits<{ open: [] }>();
+const emit = defineEmits<{
+  open: [];
+  action: [action: NodeHoverAction, event: Event];
+}>();
 const openNode = () => emit("open");
 
 const statusColor = computed(() => STATUS_META[props.engine.status].color);
@@ -26,10 +32,16 @@ const statusColor = computed(() => STATUS_META[props.engine.status].color);
     @click.stop="openNode"
     @keydown.enter.stop="openNode"
   >
-    <span class="icon-wrap">
-      <ServerIcon :size="38" :color="statusColor" />
-      <i class="fresh-dot" />
-    </span>
+    <NodeHoverCard
+      kind="engine"
+      :engine="engine"
+      @action="(action, event) => emit('action', action, event)"
+    >
+      <span class="icon-wrap">
+        <ServerIcon :size="38" :color="statusColor" />
+        <i class="fresh-dot" />
+      </span>
+    </NodeHoverCard>
     <span class="name">{{ engine.name }}</span>
     <span v-if="engine.ip" class="ip">{{ engine.ip }}</span>
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref, watch } from "vue";
 import { ElMessageBox } from "element-plus";
 import { Plus, Refresh } from "@element-plus/icons-vue";
 import { useRoute, useRouter } from "vue-router";
@@ -8,7 +8,10 @@ import StatusLegend from "@/components/panel/StatusLegend.vue";
 import UnusedEnginePool from "@/components/panel/UnusedEnginePool.vue";
 import type { EngineInfo } from "@/types/topology";
 import MachineSideList from "./detail/MachineSideList.vue";
-import DetailPanel from "./detail/DetailPanel.vue";
+
+const DetailPanel = defineAsyncComponent(
+  () => import("./detail/DetailPanel.vue")
+);
 import { useComputerMonitor } from "@/composables/useComputerMonitor";
 import {
   startDbService,
@@ -37,40 +40,48 @@ const monitor = useComputerMonitor();
 const machineFormVisible = ref(false);
 const machineFormKind = ref<"schedule" | "engine">("schedule");
 const snapshot = monitor.snapshot;
-const loading = monitor.loading;
 const error = monitor.error;
-const freshEngineIds = monitor.freshEngineIds;
 const detailGroups = monitor.detailGroups;
 const draggingEngine = ref<EngineInfo | null>(null);
 const draggingGroupId = ref<string | null>(null);
 const selected = ref<DetailMachine | null>(null);
 const editingMachine = ref<DetailMachine | null>(null);
-const isDetail = computed(() => route.name === "ComputerScheduleDetail");
-const unbound = computed(() =>
-  monitor.engines.value.filter(e => !e.boundScheduleIds.length)
+let detailRequestVersion = 0;
+const detailLoadingVisible = computed(
+  () => monitor.loading.value || monitor.detailLoading.value
 );
+const isDetail = computed(() => !!route.query.kind && !!route.query.id);
 async function selectAndLoad(machine: DetailMachine) {
   selected.value = machine;
-  const updated = await monitor.loadDeviceDetail(machine);
-  if (updated) selected.value = updated;
+  const version = ++detailRequestVersion;
+  try {
+    const detail = await monitor.loadDeviceDetail(machine);
+    if (version === detailRequestVersion) selected.value = detail;
+  } catch (error) {
+    if (version === detailRequestVersion)
+      ElMessageBox.alert(
+        error instanceof Error ? error.message : "获取机器详情失败",
+        "机器详情"
+      );
+  }
 }
-function findFromRoute() {
-  if (!isDetail.value) return;
-  const kind = route.params.kind as DetailKind,
-    id = decodeURIComponent(String(route.params.id || ""));
+async function findFromRoute() {
+  if (!isDetail.value) {
+    selected.value = null;
+    return;
+  }
+  const kind = route.query.kind as DetailKind;
+  const id = decodeURIComponent(String(route.query.id || ""));
   const found = monitor.machines.value.find(
     m => m.kind === kind && (m.id === id || m.ip === id)
   );
   if (!found) {
-    if (!monitor.loading.value) router.replace("/computer/schedule/index");
+    if (!monitor.loading.value) back();
     return;
   }
-  void selectAndLoad(found);
+  await selectAndLoad(found);
 }
-const unusedEngines = computed(
-  () =>
-    monitor.snapshot.value?.engines.filter(e => e.schedulerId === null) || []
-);
+const unusedEngines = monitor.unusedEngineSnapshot;
 const draggingGroup = computed(() =>
   monitor.snapshot.value?.schedulers.find(s => s.id === draggingGroupId.value)
 );
@@ -86,6 +97,12 @@ function onGroupDragStart(id: string) {
 function onGroupDragEnd() {
   draggingGroupId.value = null;
 }
+/** 拖拽引擎途经页面（池子→画布）时保持 move 光标，避免默认禁止样式。 */
+function onShellDragOver(event: DragEvent) {
+  if (!draggingEngine.value && !draggingGroupId.value) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+}
 function openAddMachine(kind: "schedule" | "engine") {
   editingMachine.value = null;
   machineFormKind.value = kind;
@@ -95,6 +112,26 @@ function openEditMachine(machine: DetailMachine) {
   editingMachine.value = machine;
   machineFormKind.value = machine.kind;
   machineFormVisible.value = true;
+}
+function openEditUnusedEngine(engine: EngineInfo) {
+  const machine = monitor.unusedMachines.value.find(
+    item => item.id === engine.id || item.ip === engine.ip
+  );
+  if (machine) openEditMachine(machine);
+}
+async function onRemoveUnusedEngine(engine: EngineInfo) {
+  const confirmed = await ElMessageBox.confirm(
+    "删除后将无法恢复，确定删除该机器吗？",
+    "删除机器",
+    {
+      type: "warning",
+      confirmButtonText: "确定删除",
+      cancelButtonText: "取消"
+    }
+  )
+    .then(() => true)
+    .catch(() => false);
+  if (confirmed) await monitor.removeUnusedEngine(engine.id);
 }
 function rawMachineId(value: any) {
   const match = String(value?.id || "").match(/\d+$/);
@@ -205,14 +242,15 @@ async function onNodeAction(payload: {
 function openDetail(e: any) {
   const kind = e?.kind as DetailKind;
   const id = String(e?.id || "");
-  if (kind && id)
-    router.push(`/computer/schedule/detail/${kind}/${encodeURIComponent(id)}`);
+  if (!kind || !id) return;
+  router.push({
+    path: route.path,
+    query: { ...route.query, kind, id }
+  });
 }
 function back() {
-  router.push("/computer/schedule/index");
-}
-function selectMachine(m: DetailMachine) {
-  void selectAndLoad(m);
+  const { kind: _kind, id: _id, ...rest } = route.query;
+  router.push({ path: route.path, query: rest });
 }
 type DetailAction = "database" | "schedule" | "engine";
 function scheduleRunning(machine: DetailMachine) {
@@ -253,9 +291,14 @@ async function runDetailAction(action: DetailAction, machine: DetailMachine) {
     success = running ? "调度已关闭" : "调度已开启";
   } else {
     const running = engineRunning(machine);
+    const engine = monitor.engines.value.find(item => item.ip === machine.ip);
     fn = running
       ? () => stopEngine({ engineIp: machine.ip })
-      : () => startEngine({ engineIp: machine.ip });
+      : () =>
+          startEngine({
+            engineIp: machine.ip,
+            cachePath: String(engine?.cachePath || machine.cachePath || "")
+          });
     success = running ? "引擎已关闭" : "引擎已开启";
   }
   const ok = await monitor.action(fn, success);
@@ -272,14 +315,9 @@ onMounted(async () => {
   findFromRoute();
 });
 watch(
-  () => [
-    route.name,
-    route.params.kind,
-    route.params.id,
-    monitor.machines.value.length
-  ],
+  () => [route.query.kind, route.query.id, monitor.machines.value.length],
   async () => {
-    if (isDetail.value && !detailGroups.value.length)
+    if (isDetail.value && !detailGroups.value.length && !monitor.loading.value)
       await monitor.loadColumns();
     findFromRoute();
   }
@@ -289,23 +327,26 @@ watch(
 <template>
   <div class="schedule-page">
     <template v-if="isDetail">
-      <div class="detail-layout">
+      <div
+        v-loading="detailLoadingVisible"
+        class="detail-layout"
+        element-loading-text="正在加载机器详情..."
+      >
         <MachineSideList
           :groups="detailGroups"
           :active-kind="selected?.kind || 'schedule'"
           :active-id="selected?.id || ''"
           :active-ip="selected?.ip"
-          @select="selectMachine"
+          @select="selectAndLoad"
         /><DetailPanel
           :machine="selected"
-          :mock-mode="monitor.mockMode"
           @back="back"
           @action="selected && runDetailAction($event, selected)"
         />
       </div>
     </template>
     <template v-else>
-      <div class="topology-shell">
+      <div class="topology-shell" @dragover="onShellDragOver">
         <div class="page-head">
           <div class="page-title">
             <h1>调度与引擎拓扑图</h1>
@@ -323,7 +364,6 @@ watch(
               plain
               size="small"
               :icon="Refresh"
-              :loading="loading"
               aria-label="刷新"
               @click="monitor.loadData"
               >刷新</el-button
@@ -341,7 +381,6 @@ watch(
           <TopologyGraph
             :snapshot="snapshot"
             :dragging-engine="draggingEngine"
-            :fresh-engine-ids="freshEngineIds"
             @open-node="openDetail"
             @node-action="onNodeAction"
             @bind-engine="onBindEngine"
@@ -361,7 +400,8 @@ watch(
         <UnusedEnginePool
           v-if="snapshot"
           :engines="unusedEngines"
-          @remove="engine => monitor.removeUnusedEngine(engine.id)"
+          @edit="openEditUnusedEngine"
+          @remove="onRemoveUnusedEngine"
           @drag-start="engine => (draggingEngine = engine)"
           @drag-end="draggingEngine = null"
         />

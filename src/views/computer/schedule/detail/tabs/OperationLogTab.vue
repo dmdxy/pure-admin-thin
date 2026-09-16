@@ -11,7 +11,6 @@ import DeleteBinLine from "~icons/ri/delete-bin-line";
 import AddLine from "~icons/ri/add-line";
 import EditLine from "~icons/ri/edit-line";
 import RecordCircleLine from "~icons/ri/record-circle-line";
-import { getMockOperationLogs } from "../../mockData";
 
 defineOptions({ name: "ScheduleOperationLogTab" });
 
@@ -19,7 +18,6 @@ const props = defineProps<{
   machineIp: string;
   kind: DetailKind;
   active: boolean;
-  mockMode?: boolean;
 }>();
 
 const loading = ref(false);
@@ -103,18 +101,6 @@ function resultTone(result: string) {
 async function fetchData() {
   const version = ++requestVersion;
   loading.value = true;
-  if (props.mockMode) {
-    const logs = getMockOperationLogs(props.kind).filter(log =>
-      queryForm.operationType
-        ? log.operationType === queryForm.operationType
-        : true
-    );
-    const start = (pagination.currentPage - 1) * pagination.pageSize;
-    dataList.value = logs.slice(start, start + pagination.pageSize);
-    pagination.total = logs.length;
-    loading.value = false;
-    return;
-  }
   try {
     const params: Record<string, unknown> = {
       currentPage: pagination.currentPage,
@@ -165,7 +151,7 @@ function handleCurrentChange(val: number) {
 }
 
 watch(
-  () => [props.active, props.machineIp, props.kind, props.mockMode] as const,
+  () => [props.active, props.machineIp, props.kind] as const,
   ([visible]) => {
     requestVersion++;
     loading.value = false;

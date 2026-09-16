@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Component } from "vue";
 import CalendarLine from "~icons/ri/calendar-todo-line";
 import CpuLine from "~icons/ri/cpu-line";
 import Database2Line from "~icons/ri/database-2-line";
@@ -26,7 +26,18 @@ const isSchedule = computed(() => roles.value.isSchedule);
 const isEngine = computed(() => roles.value.isEngine);
 const showTrend = computed(() => isEngine.value);
 
-const statusCards = computed(() => {
+type StatusCard = {
+  key: string;
+  label: string;
+  value: string;
+  tone: "blue" | "amber" | "violet" | "green";
+  icon: Component;
+  status?: string;
+  metric?: boolean;
+  mono?: boolean;
+};
+
+const statusCards = computed<StatusCard[]>(() => {
   if (isSchedule.value && !isEngine.value) {
     return [
       {

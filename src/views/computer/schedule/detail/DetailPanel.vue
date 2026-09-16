@@ -15,7 +15,6 @@ defineOptions({ name: "ScheduleDetailPanel" });
 
 const props = defineProps<{
   machine: DetailMachine | null;
-  mockMode?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -166,7 +165,6 @@ watch(
           <TaskListTab
             :machine-ip="machine.ip"
             :kind="roles.isEngine ? 'engine' : machine.kind"
-            :mock-mode="mockMode"
           />
         </el-tab-pane>
         <el-tab-pane label="操作日志" name="logs">
@@ -174,7 +172,6 @@ watch(
             :machine-ip="machine.ip"
             :kind="machine.kind"
             :active="activeTab === 'logs'"
-            :mock-mode="mockMode"
           />
         </el-tab-pane>
       </el-tabs>

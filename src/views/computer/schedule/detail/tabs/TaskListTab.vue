@@ -14,14 +14,12 @@ import CheckboxCircleLine from "~icons/ri/checkbox-circle-line";
 import ErrorWarningLine from "~icons/ri/error-warning-line";
 import FileCopyLine from "~icons/ri/file-copy-line";
 import TaskLogDrawer from "./TaskLogDrawer.vue";
-import { getMockDeviceTasks } from "../../mockData";
 
 defineOptions({ name: "ScheduleTaskListTab" });
 
 const props = defineProps<{
   machineIp: string;
   kind: string;
-  mockMode?: boolean;
 }>();
 type TaskFilter = "all" | "running" | "completed" | "abnormal";
 const loading = ref(false);
@@ -132,11 +130,6 @@ function copyField(event: Event, label: string, value: unknown) {
 async function loadTasks() {
   if (!props.machineIp || props.kind !== "engine") return;
   loading.value = true;
-  if (props.mockMode) {
-    tasks.value = getMockDeviceTasks(props.machineIp);
-    loading.value = false;
-    return;
-  }
   try {
     const res = await getDeviceTask({ engineIp: props.machineIp });
     tasks.value = res?.code === 0 && Array.isArray(res.data) ? res.data : [];
@@ -149,7 +142,7 @@ async function loadTasks() {
 }
 onMounted(() => void loadTasks());
 watch(
-  () => [props.machineIp, props.kind, props.mockMode],
+  () => [props.machineIp, props.kind],
   () => {
     logVisible.value = false;
     selectedTask.value = null;
@@ -215,18 +208,18 @@ watch(
           <button
             type="button"
             class="task-id"
-            @click="copyField($event, '节点 ID', task.nodeId)"
+            @click="copyField($event, 'nodeId', task.nodeId)"
           >
-            <span>节点 ID</span>
+            <span>nodeId</span>
             <code>{{ displayValue(task.nodeId) }}</code>
             <IconifyIconOffline :icon="FileCopyLine" />
           </button>
           <button
             type="button"
             class="task-id"
-            @click="copyField($event, 'Job ID', task.jobId)"
+            @click="copyField($event, 'jobId', task.jobId)"
           >
-            <span>Job ID</span>
+            <span>jobId</span>
             <code>{{ displayValue(task.jobId) }}</code>
             <IconifyIconOffline :icon="FileCopyLine" />
           </button>
@@ -234,11 +227,7 @@ watch(
       </article>
     </div>
     <el-empty v-else :image-size="56" description="当前分类下暂无任务" />
-    <TaskLogDrawer
-      v-model="logVisible"
-      :task="selectedTask"
-      :mock-mode="props.mockMode"
-    />
+    <TaskLogDrawer v-model="logVisible" :task="selectedTask" />
   </div>
 </template>
 

@@ -27,6 +27,10 @@ import {
 } from "@/utils/topologyLayout";
 import GroupCardNode from "@/components/topology/GroupCardNode.vue";
 import type { NodeHoverAction } from "@/components/topology/NodeHoverCard.vue";
+import ZoomInLine from "~icons/ri/zoom-in-line";
+import ZoomOutLine from "~icons/ri/zoom-out-line";
+import Focus3Line from "~icons/ri/focus-3-line";
+import ExpandDiagonalLine from "~icons/ri/expand-diagonal-line";
 
 /**
  * 拓扑图画布组件（可复用）。
@@ -44,6 +48,7 @@ const props = defineProps<{
   snapshot: TopologySnapshot;
   draggingEngine?: EngineInfo | null;
   freshEngineIds?: Set<string>;
+  freshSchedulerIds?: Set<string>;
 }>();
 
 const emit = defineEmits<{
@@ -163,18 +168,6 @@ function groupFor(schedulerId: string): GroupLayout | undefined {
   );
 }
 
-function schedulerFor(schedulerId: string) {
-  return props.snapshot.schedulers.find(
-    scheduler => scheduler.id === schedulerId
-  );
-}
-
-function enginesFor(schedulerId: string) {
-  return props.snapshot.engines.filter(
-    engine => engine.schedulerId === schedulerId
-  );
-}
-
 function graphDataFor(state: BuiltTopologyGraph): RGJsonData {
   return {
     ...state.jsonData,
@@ -206,8 +199,6 @@ function tryIncrementalUpdate(
   if (!builtState.value || !prev) return false;
 
   const diff = diffEngineBindings(prev, next);
-  if (diff.type === "none") return true;
-
   if (diff.type !== "group-engines") return false;
 
   // 绑定关系变化时只重新计算领域布局，并把几何同步到已有 relation-graph
@@ -467,15 +458,15 @@ defineExpose({ fitView, resetView });
     <RelationGraph ref="graphRef" :options="graphOptions">
       <template #node="{ node }">
         <GroupCardNode
-          v-if="
-            nodeDataFor(node) &&
-            groupFor(nodeDataFor(node)!.schedulerId) &&
-            schedulerFor(nodeDataFor(node)!.schedulerId)
+          v-if="nodeDataFor(node)"
+          :key="nodeDataFor(node)!.schedulerId"
+          :group="
+            groupFor(nodeDataFor(node)!.schedulerId) || nodeDataFor(node)!.group
           "
-          :group="groupFor(nodeDataFor(node)!.schedulerId)!"
-          :scheduler="schedulerFor(nodeDataFor(node)!.schedulerId)!"
-          :engines="enginesFor(nodeDataFor(node)!.schedulerId)"
+          :scheduler="nodeDataFor(node)!.scheduler"
+          :engines="nodeDataFor(node)!.engines"
           :fresh-engine-ids="freshEngineIds"
+          :fresh-scheduler-ids="freshSchedulerIds"
           :instant-engine-ids="fastEngineIds"
           :highlighted="dropTargetId === nodeDataFor(node)!.schedulerId"
           :dragging-group="draggingGroupId !== null"
@@ -491,21 +482,25 @@ defineExpose({ fitView, resetView });
     </RelationGraph>
 
     <div class="graph-toolbar" aria-label="画布工具栏">
-      <button type="button" title="放大" @click="zoomIn">＋</button>
-      <button type="button" title="缩小" @click="zoomOut">－</button>
+      <button type="button" title="放大" @click="zoomIn">
+        <ZoomInLine />
+      </button>
+      <button type="button" title="缩小" @click="zoomOut">
+        <ZoomOutLine />
+      </button>
       <button
         type="button"
         title="还原默认视图（缩放 100%）"
         @click="resetView"
       >
-        ⌂
+        <Focus3Line />
       </button>
       <button
         type="button"
         title="适应画布（缩小以完整显示所有分组）"
         @click="fitView"
       >
-        ⤢
+        <ExpandDiagonalLine />
       </button>
     </div>
   </div>
@@ -568,15 +563,22 @@ defineExpose({ fitView, resetView });
 }
 
 .graph-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
-  font-size: 15px;
-  line-height: 1;
+  padding: 0;
   color: var(--el-text-color-regular);
   cursor: pointer;
   background: transparent;
   border: 0;
   border-radius: 6px;
+}
+
+.graph-toolbar button :deep(svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .graph-toolbar button:hover {

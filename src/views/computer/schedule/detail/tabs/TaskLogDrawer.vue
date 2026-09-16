@@ -2,12 +2,10 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 import type { DeviceTaskItem } from "@/api/computer";
 import { getMachineTaskOpLog } from "@/api/machine";
-import { getMockTaskLogs } from "../../mockData";
 
 const visible = defineModel<boolean>({ default: false });
 const props = defineProps<{
   task: DeviceTaskItem | null;
-  mockMode?: boolean;
 }>();
 interface TaskLog {
   id: number;
@@ -51,12 +49,6 @@ async function loadLogs() {
     return;
   }
   loading.value = true;
-  if (props.mockMode) {
-    records.value = getMockTaskLogs(props.task!);
-    total.value = records.value.length;
-    loading.value = false;
-    return;
-  }
   try {
     const res = await getMachineTaskOpLog({
       taskId,
@@ -76,7 +68,7 @@ async function loadLogs() {
     if (version === requestVersion) loading.value = false;
   }
 }
-watch([visible, () => props.task, () => props.mockMode], () => {
+watch([visible, () => props.task], () => {
   page.value = 1;
   total.value = 0;
   void loadLogs();

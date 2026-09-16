@@ -6,8 +6,8 @@
  */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import ServerIcon from "@/components/icons/ServerIcon.vue";
-import IconEdit from "@/components/icons/IconEdit.vue";
-import IconDelete from "@/components/icons/IconDelete.vue";
+import EditLine from "~icons/ri/edit-line";
+import DeleteBinLine from "~icons/ri/delete-bin-line";
 import type { EngineInfo } from "@/types/topology";
 
 const props = defineProps<{ engines: EngineInfo[] }>();
@@ -60,6 +60,12 @@ function onDragStart(event: DragEvent, engine: EngineInfo) {
   emit("drag-start", engine);
 }
 
+/** 池内拖拽途经时也声明可放置，避免浏览器默认显示禁止光标。 */
+function onPoolDragOver(event: DragEvent) {
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+}
+
 /** 普通鼠标滚轮默认只产生 deltaY，这里将其映射为引擎池横向滚动。 */
 function onPoolWheel(event: WheelEvent) {
   const scrollElement = event.currentTarget as HTMLElement | null;
@@ -77,7 +83,11 @@ function onPoolWheel(event: WheelEvent) {
 </script>
 
 <template>
-  <footer class="unused-engine-pool" aria-label="未使用引擎">
+  <footer
+    class="unused-engine-pool"
+    aria-label="未使用引擎"
+    @dragover="onPoolDragOver"
+  >
     <div
       ref="poolScrollRef"
       class="pool-scroll"
@@ -104,12 +114,22 @@ function onPoolWheel(event: WheelEvent) {
         <div class="pool-row pool-row--meta">
           <span class="pool-ip">{{ engine.ip ?? "—" }}</span>
           <span class="pool-ops">
-            <button type="button" title="编辑" @click="emit('edit', engine)">
-              <IconEdit :size="14" color="var(--el-text-color-secondary)" />
-            </button>
-            <button type="button" title="移除" @click="emit('remove', engine)">
-              <IconDelete :size="14" color="var(--el-text-color-secondary)" />
-            </button>
+            <el-button
+              link
+              type="primary"
+              :icon="EditLine"
+              title="编辑"
+              aria-label="编辑"
+              @click.stop="emit('edit', engine)"
+            />
+            <el-button
+              link
+              type="danger"
+              :icon="DeleteBinLine"
+              title="删除"
+              aria-label="删除"
+              @click.stop="emit('remove', engine)"
+            />
           </span>
         </div>
       </article>
@@ -228,21 +248,11 @@ function onPoolWheel(event: WheelEvent) {
 
 .pool-ops {
   display: inline-flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
 }
 
-.pool-ops button {
-  display: inline-flex;
-  padding: 2px;
-  line-height: 0;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  border-radius: 4px;
-}
-
-.pool-ops button:hover {
-  background: var(--app-hover-surface);
+.pool-ops :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

@@ -44,7 +44,19 @@ export interface TopologyEngineItem {
   ip: string;
   name: string;
   cache_path?: string;
+  cachePath?: string;
+  port?: number;
   status?: string;
+  cache_left?: number | string;
+  cacheLeft?: number | string;
+  cpu?: number | string;
+  gpu?: number | string;
+  memory?: number | string;
+  memorySize?: number | string;
+  threadNum?: number | string;
+  maxWorkNum?: number | string;
+  cpuFeature?: Record<string, boolean>;
+  gpuFeature?: Record<string, boolean>;
 }
 
 export interface TopologyScheduleItem {
@@ -80,8 +92,9 @@ export interface DeviceDetail {
   [key: string]: any;
 }
 
+/** 与 603-vue-front 一致：开发代理 base 为 /v1 */
 const request = (method: "get" | "post", url: string, config: any = {}) =>
-  http.request<any>(method, url, config);
+  http.request<any>(method, url.startsWith("/v1/") ? url : `/v1${url}`, config);
 
 export const getScheduleNodePage = (params?: object) =>
   request("get", "/computer/schedule/page", { params });
@@ -189,7 +202,7 @@ export const createMonitorSSE = (
 ): SSEConnection =>
   sse.connect({
     ...options,
-    url: "/sse/machine/create",
+    url: "/v1/sse/machine/create",
     eventNames: ["connected", "engine", "schedule"]
   });
 export const pushMonitorStatus = (data: {
@@ -198,7 +211,15 @@ export const pushMonitorStatus = (data: {
   engineIp: string[];
 }) => request("post", "/sse/machine/push-status", { data });
 
-export const getJobTypeName = (type: string) => type || "未知任务";
+/** 任务明细类型映射，与 603-vue-front 任务明细表保持一致。 */
+const jobTypeMap: Record<string, string> = {
+  Map: "分配",
+  Operator: "并行",
+  Reduce: "合并"
+};
+
+export const getJobTypeName = (type: string) =>
+  jobTypeMap[type] || type || "未知任务";
 
 export const updateScheduleSort = (data: { id: number; sort: number }[]) =>
   request("post", "/computer/schedule/updateSort", { data: { data } });

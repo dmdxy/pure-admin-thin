@@ -20,6 +20,7 @@ export interface ScheduleItem {
   dbIp?: string;
   boundEngineIds: string[];
   rawId: number;
+  sort?: number;
 }
 export interface EngineItem {
   id: string;
@@ -124,7 +125,7 @@ const text = (v: unknown) => (v == null || v === "" ? "—" : String(v));
 export const mapScheduleStatus = (s?: string): NodeStatus =>
   s === "on" || s === "running" ? "running" : "stopped";
 export const mapEngineStatus = (s?: string): NodeStatus =>
-  s === "idle" || s === "running"
+  s === "idle" || s === "running" || s === "on"
     ? "running"
     : s === "busy" || s === "abnormal"
       ? "abnormal"
