@@ -1,3 +1,57 @@
+# 后端菜单 title 常为中文，切换英文时按中文键查找
+机器管理: 机器管理
+机器调度管理: 机器调度管理
+多人协同管理: 多人协同管理
+多人协同任务管理: 多人协同任务管理
+多人协同任务详情: 多人协同任务详情
+多人协同任务统计: 多人协同任务统计
+日志管理: 日志管理
+日志统计: 日志统计
+日志查询: 日志查询
+站内信管理: 站内信管理
+站内信: 站内信
+项目管理: 项目管理
+项目工程管理: 项目工程管理
+项目列表: 项目列表
+项目方案: 项目方案
+方案管理: 方案管理
+工序管理: 工序管理
+工序分组管理: 工序分组管理
+项目分组: 项目分组
+多机并行: 多机并行
+多机并行管理: 多机并行管理
+多机并行任务管理: 多机并行任务管理
+并行任务: 并行任务
+任务模板: 任务模板
+模板管理: 模板管理
+插件管理: 插件管理
+插件分组: 插件分组
+插件分组管理: 插件分组管理
+算力调度: 算力调度
+调度拓扑: 调度拓扑
+协同任务: 协同任务
+任务列表: 任务列表
+任务统计: 任务统计
+任务详情: 任务详情
+日志中心: 日志中心
+日志概览: 日志概览
+消息通知: 消息通知
+系统管理: 系统管理
+用户管理: 用户管理
+角色管理: 角色管理
+角色权限管理: 角色权限管理
+菜单管理: 菜单管理
+菜单路由管理: 菜单路由管理
+部门管理: 部门管理
+字段管理: 字段管理
+字段配置: 字段配置
+权限管理: 权限管理
+页面权限: 页面权限
+按钮权限: 按钮权限
+工作台: 工作台
+工作流: 工作流
+表格测试: 表格测试
+表格示例: 表格示例
 buttons:
   pureLoginOut: 退出系统
   pureLogin: 登录
@@ -70,8 +124,25 @@ menus:
   pureAccessDenied: "403"
   pureServerError: "500"
   pureWorkflow: 工作流
+  pureProject: 项目管理
+  pureProjectItem: 项目工程管理
+  pureScheme: 方案管理
+  pureProcess: 工序管理
+  pureProcessGroup: 工序分组管理
+  pureMultitask: 多机并行管理
+  pureMultitaskItem: 多机并行任务管理
+  pureTemplate: 模板管理
+  purePlugin: 插件管理
+  purePluginGroup: 插件分组管理
+  purePermission: 系统管理
+  purePermissionMenusRoute: 菜单路由管理
+  purePermissionRole: 角色权限管理
+  purePermissionUser: 用户管理
+  purePermissionDept: 部门管理
+  purePermissionField: 字段配置
   project: 项目管理
   projectItem: 项目列表
+  projectEngineering: 项目工程管理
   projectScheme: 项目方案
   projectProcess: 工序管理
   projectGroup: 项目分组
@@ -80,23 +151,37 @@ menus:
   multitaskTemplate: 任务模板
   multitaskPlugin: 插件管理
   multitaskGroup: 插件分组
+  parallel: 多机并行管理
+  parallelTask: 多机并行任务管理
+  parallelTemplate: 模板管理
+  parallelPlugin: 插件管理
   computer: 算力调度
   computerSchedule: 调度拓扑
   computerScheduleDetail: 机器详情
+  schedule: 机器调度管理
   collaboration: 协同任务
   collaborationTask: 任务列表
   collaborationTaskStat: 任务统计
   collaborationTaskDetail: 任务详情
+  collab: 多人协同管理
+  collabTask: 多人协同任务管理
+  collabStats: 多人协同任务统计
   log: 日志中心
   logOverview: 日志概览
+  logStats: 日志统计
   logQuery: 日志查询
   notification: 消息通知
+  message: 站内信
   system: 系统管理
   systemUser: 用户管理
   systemRole: 角色管理
   systemMenu: 菜单管理
   systemDept: 部门管理
   systemField: 字段管理
+  systemPermission: 权限管理
+  permissionPage: 页面权限
+  permissionButton: 按钮权限
+  permissionButtonLogin: 登录权限按钮
 workflow:
   subtitle: 选择业务入口，继续编排或查看最近工作流
   create: 新建

@@ -118,6 +118,7 @@ const transitionMain = defineComponent({
           <template #default="{ Comp, fullPath, frameInfo }">
             <el-scrollbar
               v-if="fixedHeader"
+              class="page-scrollbar"
               :wrap-style="{
                 display: 'flex',
                 'flex-wrap': 'wrap',
@@ -137,7 +138,7 @@ const transitionMain = defineComponent({
             >
               <el-backtop
                 :title="t('buttons.pureBackTop')"
-                target=".app-main .el-scrollbar__wrap"
+                target=".app-main .page-scrollbar > .el-scrollbar__wrap"
               >
                 <BackTopIcon />
               </el-backtop>
@@ -207,7 +208,8 @@ const transitionMain = defineComponent({
   overflow: hidden;
 }
 
-.app-main :deep(.el-scrollbar) {
+/* 只锁页面级滚动条，必须用子选择器，避免误伤表格内部 el-scrollbar */
+.app-main :deep(.page-scrollbar) {
   flex: 1;
   width: 100%;
   min-width: 0;
@@ -215,14 +217,14 @@ const transitionMain = defineComponent({
   min-height: 0;
 }
 
-.app-main :deep(.el-scrollbar__wrap) {
+.app-main :deep(.page-scrollbar > .el-scrollbar__wrap) {
   width: 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
-.app-main :deep(.el-scrollbar__view) {
+.app-main :deep(.page-scrollbar > .el-scrollbar__wrap > .el-scrollbar__view) {
   display: flex;
   flex-direction: column;
   width: 100%;

@@ -1,5 +1,5 @@
 import App from "./App.vue";
-import router from "./router";
+import router, { prepareDynamicRoutes } from "./router";
 import { setupStore } from "@/store";
 import { useI18n, i18n } from "@/plugins/i18n";
 import { getPlatformConfig } from "./config";
@@ -9,6 +9,7 @@ import { createApp, type Directive } from "vue";
 import { useElementPlus } from "@/plugins/elementPlus";
 import { injectResponsiveStorage } from "@/utils/responsive";
 import { resolveLocale } from "@/utils/locale";
+import { message } from "@/utils/message";
 
 import Table from "@pureadmin/table";
 // import PureDescriptions from "@pureadmin/descriptions";
@@ -56,6 +57,12 @@ app.use(VueTippy);
 
 getPlatformConfig(app).then(async config => {
   setupStore(app);
+  // 已登录时先注册后端菜单路由，再安装 router，避免刷新深链报 VUE_ROUTER_R0004
+  try {
+    await prepareDynamicRoutes();
+  } catch (error: any) {
+    message(error?.message || "菜单加载失败，请重新登录", { type: "error" });
+  }
   app.use(router);
   await router.isReady();
   injectResponsiveStorage(app, config);

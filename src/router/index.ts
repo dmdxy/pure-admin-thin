@@ -2,9 +2,12 @@
 import Cookies from "js-cookie";
 import { getConfig } from "@/config";
 import NProgress from "@/utils/progress";
+import { message } from "@/utils/message";
 import { transformI18n } from "@/plugins/i18n";
 import { buildHierarchyTree } from "@/utils/tree";
 import remainingRouter from "./modules/remaining";
+import homeRouter from "./modules/home";
+import errorRouter from "./modules/error";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import {
@@ -38,23 +41,8 @@ import {
   multipleTabsKey
 } from "@/utils/auth";
 
-/** 自动导入全部静态路由，无需再手动引入！匹配 src/router/modules 目录（任何嵌套级别）中具有 .ts 扩展名的所有文件，除了 remaining.ts 文件
- * 如何匹配所有文件请看：https://github.com/mrmlnc/fast-glob#basic-syntax
- * 如何排除文件请看：https://cn.vitejs.dev/guide/features.html#negative-patterns
- */
-const modules: Record<string, any> = import.meta.glob(
-  ["./modules/**/*.ts", "!./modules/**/remaining.ts"],
-  {
-    eager: true
-  }
-);
-
-/** 原始静态路由（未做任何处理） */
-const routes = [];
-
-Object.keys(modules).forEach(key => {
-  routes.push(modules[key].default);
-});
+/** 仅注册工作台和错误页；登录、跳转及工作流保留在 remainingRouter。业务菜单由后端 loginMenuList 下发。 */
+const routes = [homeRouter, errorRouter];
 
 /** 导出处理后的静态路由（三级及以上的路由全部拍成二级） */
 export const constantRoutes: Array<RouteRecordRaw> = formatTwoStageRoutes(
@@ -64,10 +52,10 @@ export const constantRoutes: Array<RouteRecordRaw> = formatTwoStageRoutes(
 /** 初始的静态路由，用于退出登录时重置路由 */
 const initConstantRoutes: Array<RouteRecordRaw> = cloneDeep(constantRoutes);
 
-/** 用于渲染菜单，保持原始层级 */
-export const constantMenus: Array<RouteComponent> = ascending(
-  routes.flat(Infinity)
-).concat(...remainingRouter);
+/** 内置首页参与菜单，业务菜单仍由后端提供，保持原始层级。 */
+export const constantMenus: Array<RouteComponent> = ascending(routes).concat(
+  ...remainingRouter
+);
 
 /** 不参与菜单的路由 */
 export const remainingPaths = Object.keys(remainingRouter).map(v => {
@@ -102,6 +90,24 @@ export function resetLoadedPaths() {
   loadedPaths.clear();
 }
 
+/**
+ * 在 app.use(router) 之前注册动态路由。
+ * 刷新深链（如 /computer/schedule/index）时，必须先有匹配记录，
+ * 否则首次 resolve 就会触发 VUE_ROUTER_R0004。
+ */
+export async function prepareDynamicRoutes() {
+  const userInfo = storageLocal().getItem<DataInfo<number>>(userKey);
+  if (!Cookies.get(multipleTabsKey) || !userInfo) return;
+  if (usePermissionStoreHook().wholeMenus.length > 0) return;
+  try {
+    await initRouter();
+  } catch (error) {
+    removeToken();
+    resetRouter();
+    throw error;
+  }
+}
+
 /** 重置路由 */
 export function resetRouter() {
   router.clearRoutes();
@@ -116,7 +122,7 @@ export function resetRouter() {
 }
 
 /** 路由白名单 */
-const whiteList = ["/login", "/login-new"];
+const whiteList = ["/login"];
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
@@ -167,47 +173,70 @@ router.beforeEach((to: ToRouteType, _from) => {
       }
       return toCorrectRoute();
     }
-    // 刷新
+    // 刷新：先拉完后端菜单并注册动态路由，再放行目标地址。
+    // 不能 fire-and-forget，否则首轮会按未注册路径匹配并触发 VUE_ROUTER_R0004。
     if (
       usePermissionStoreHook().wholeMenus.length === 0 &&
-      to.path !== "/login" &&
-      to.path !== "/login-new"
+      to.path !== "/login"
     ) {
-      initRouter().then((router: Router) => {
-        if (!useMultiTagsStoreHook().getMultiTagsCache) {
-          const { path } = to;
-          const route = findRouteByPath(
-            path,
-            router.options.routes[0].children
-          );
-          getTopMenu(true);
-          // query、params模式路由传参数的标签页不在此处处理
-          if (route && route.meta?.title) {
-            if (isAllEmpty(route.parentId) && route.meta?.backstage) {
-              // 此处为动态顶级路由（目录）
-              const { path, name, meta } = route.children[0];
-              useMultiTagsStoreHook().handleTags("push", {
-                path,
-                name,
-                meta
-              });
-            } else {
-              const { path, name, meta } = route;
-              useMultiTagsStoreHook().handleTags("push", {
-                path,
-                name,
-                meta
-              });
+      return initRouter()
+        .then((router: Router) => {
+          if (!useMultiTagsStoreHook().getMultiTagsCache) {
+            const { path } = to;
+            const route = findRouteByPath(
+              path,
+              router.options.routes[0].children
+            );
+            getTopMenu(true);
+            // query、params模式路由传参数的标签页不在此处处理
+            if (route && route.meta?.title) {
+              const routeWithParent = route as RouteRecordRaw & {
+                parentId?: number | string | null;
+              };
+              if (
+                isAllEmpty(routeWithParent.parentId) &&
+                route.meta?.backstage
+              ) {
+                // 此处为动态顶级路由（目录）
+                const { path, name, meta } = route.children[0];
+                useMultiTagsStoreHook().handleTags("push", {
+                  path,
+                  name,
+                  meta
+                });
+              } else {
+                const { path, name, meta } = route;
+                useMultiTagsStoreHook().handleTags("push", {
+                  path,
+                  name,
+                  meta
+                });
+              }
             }
           }
-        }
-        // 确保动态路由完全加入路由列表并且不影响静态路由（注意：动态路由刷新时router.beforeEach可能会触发两次，第一次触发动态路由还未完全添加，第二次动态路由才完全添加到路由列表，如果需要在router.beforeEach做一些判断可以在to.name存在的条件下去判断，这样就只会触发一次）
-        if (isAllEmpty(to.name)) router.push(to.fullPath);
-      });
+          // 动态路由已注册，用 replace 重新进入，确保 matched 完整
+          return {
+            path: to.path,
+            query: to.query,
+            hash: to.hash,
+            replace: true
+          };
+        })
+        .catch(error => {
+          removeToken();
+          resetRouter();
+          message(error.message || "菜单加载失败，请重新登录", {
+            type: "error"
+          });
+          return { path: "/login", replace: true };
+        });
     }
     return toCorrectRoute();
   }
-  if (!whiteList.includes(to.path)) {
+  if (to.path !== "/login") {
+    if (whiteList.indexOf(to.path) !== -1) {
+      return;
+    }
     removeToken();
     return { path: "/login" };
   }

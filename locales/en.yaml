@@ -1,3 +1,56 @@
+机器管理: Machine Management
+机器调度管理: Machine Scheduling
+多人协同管理: Collaboration Management
+多人协同任务管理: Collaboration Task Management
+多人协同任务详情: Collaboration Task Details
+多人协同任务统计: Collaboration Task Statistics
+日志管理: Log Management
+日志统计: Log Statistics
+日志查询: Log Query
+站内信管理: Message Management
+站内信: Inbox
+项目管理: Project Management
+项目工程管理: Project Engineering
+项目列表: Project List
+项目方案: Project Schemes
+方案管理: Scheme Management
+工序管理: Process Management
+工序分组管理: Process Group Management
+项目分组: Project Groups
+多机并行: Multitask
+多机并行管理: Multi-machine Parallel
+多机并行任务管理: Parallel Task Management
+并行任务: Parallel Tasks
+任务模板: Task Templates
+模板管理: Template Management
+插件管理: Plugin Management
+插件分组: Plugin Groups
+插件分组管理: Plugin Group Management
+算力调度: Compute Schedule
+调度拓扑: Schedule Topology
+协同任务: Collaboration
+任务列表: Task List
+任务统计: Task Stats
+任务详情: Task Detail
+日志中心: Logs
+日志概览: Log Overview
+消息通知: Notifications
+系统管理: System Management
+用户管理: User Management
+角色管理: Role Management
+角色权限管理: Role & Permission Management
+菜单管理: Menu Management
+菜单路由管理: Menu & Route Management
+部门管理: Department Management
+字段管理: Field Management
+字段配置: Field Configuration
+权限管理: Permission Management
+页面权限: Page Permission
+按钮权限: Button Permission
+工作台: Workbench
+工作流: Workflow
+表格测试: Table Demo
+表格示例: Table Demo
 buttons:
   pureLoginOut: LoginOut
   pureLogin: Login
@@ -70,33 +123,64 @@ menus:
   pureAccessDenied: "403"
   pureServerError: "500"
   pureWorkflow: Workflow
-  project: Projects
+  pureProject: Project Management
+  pureProjectItem: Project Engineering
+  pureScheme: Scheme Management
+  pureProcess: Process Management
+  pureProcessGroup: Process Group Management
+  pureMultitask: Multi-machine Parallel
+  pureMultitaskItem: Parallel Task Management
+  pureTemplate: Template Management
+  purePlugin: Plugin Management
+  purePluginGroup: Plugin Group Management
+  purePermission: System Management
+  purePermissionMenusRoute: Menu & Route Management
+  purePermissionRole: Role & Permission Management
+  purePermissionUser: User Management
+  purePermissionDept: Department Management
+  purePermissionField: Field Configuration
+  project: Project Management
   projectItem: Project List
+  projectEngineering: Project Engineering
   projectScheme: Project Schemes
-  projectProcess: Processes
+  projectProcess: Process Management
   projectGroup: Project Groups
   multitask: Multitask
   multitaskItem: Parallel Tasks
   multitaskTemplate: Task Templates
   multitaskPlugin: Plugins
   multitaskGroup: Plugin Groups
+  parallel: Multi-machine Parallel
+  parallelTask: Parallel Task Management
+  parallelTemplate: Template Management
+  parallelPlugin: Plugin Management
   computer: Compute Schedule
   computerSchedule: Schedule Topology
   computerScheduleDetail: Machine Detail
+  schedule: Machine Scheduling
   collaboration: Collaboration
   collaborationTask: Task List
   collaborationTaskStat: Task Stats
   collaborationTaskDetail: Task Detail
-  log: Logs
+  collab: Collaboration
+  collabTask: Collaboration Task
+  collabStats: Collaboration Statistics
+  log: Log Management
   logOverview: Log Overview
+  logStats: Log Statistics
   logQuery: Log Query
   notification: Notifications
-  system: System
+  message: Inbox
+  system: System Management
   systemUser: User Management
   systemRole: Role Management
   systemMenu: Menu Management
   systemDept: Department Management
   systemField: Field Management
+  systemPermission: Permission Management
+  permissionPage: Page Permission
+  permissionButton: Button Permission
+  permissionButtonLogin: Login Button Permission
 workflow:
   subtitle: Choose an entry to continue designing or reopen recent workflows
   create: Create

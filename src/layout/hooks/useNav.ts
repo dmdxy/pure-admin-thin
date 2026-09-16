@@ -2,7 +2,7 @@ import { storeToRefs } from "pinia";
 import { getConfig } from "@/config";
 import { useRouter } from "vue-router";
 import { emitter } from "@/utils/mitt";
-import Avatar from "@/assets/user.jpg";
+import defaultAvatar from "@/assets/user.jpg";
 import { getTopMenu } from "@/router/utils";
 import { useFullscreen } from "@vueuse/core";
 import type { routeMetaType } from "../types";
@@ -38,12 +38,19 @@ export function useNav() {
     };
   });
 
-  /** 头像（如果头像为空则使用 src/assets/user.jpg ） */
+  /** 头像为空或远程地址加载失败时，回退到 src/assets/user.jpg */
   const userAvatar = computed(() => {
     return isAllEmpty(useUserStoreHook()?.avatar)
-      ? Avatar
+      ? defaultAvatar
       : useUserStoreHook()?.avatar;
   });
+
+  function handleAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (!img || img.dataset.fallbackApplied === "1") return;
+    img.dataset.fallbackApplied = "1";
+    img.src = defaultAvatar;
+  }
 
   /** 昵称（如果昵称为空则显示用户名） */
   const username = computed(() => {
@@ -146,9 +153,12 @@ export function useNav() {
     return remainingPaths.includes(path);
   }
 
-  /** 获取`logo` */
+  /** 获取`logo`：走 public 目录，避免 Vite 把旧文件内联成 data URI 导致替换不生效 */
   function getLogo() {
-    return new URL("/logo.svg", import.meta.url).href;
+    const base = import.meta.env.BASE_URL || "/";
+    const prefix = base.endsWith("/") ? base : `${base}/`;
+    const version = getConfig()?.Version ?? "1";
+    return `${prefix}logo.svg?v=${encodeURIComponent(String(version))}`;
   }
 
   return {
@@ -177,6 +187,7 @@ export function useNav() {
     loginUsername,
     userRoles,
     userAvatar,
+    handleAvatarError,
     avatarsStyle,
     tooltipEffect,
     getDropdownItemStyle,

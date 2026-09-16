@@ -32,15 +32,6 @@ export default [
       showLink: false
     }
   },
-  {
-    path: "/login-new",
-    name: "LoginNew",
-    component: () => import("@/views/login-new/index.vue"),
-    meta: {
-      title: $t("menus.pureLogin"),
-      showLink: false
-    }
-  },
   // 全屏403（无权访问）页面
   {
     path: "/access-denied",
