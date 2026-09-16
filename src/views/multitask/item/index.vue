@@ -7,7 +7,7 @@ import { getUserColumns, type UserColumn } from "@/api/user";
 import { message } from "@/utils/message";
 import { workflowPath } from "@/views/workflow/utils/workflowRoute";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import SwitchButton from "~icons/ep/switch-button";
 import VideoPause from "~icons/ep/video-pause";
 import VideoPlay from "~icons/ep/video-play";
@@ -198,88 +198,110 @@ function createTask() {
       </el-form-item>
     </PureSearchCard>
 
-    <PureTableCard
-      fill-height
-      row-key="id"
-      :data="tasks"
-      :loading="loading"
-      :columns="columns"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-      @row-dblclick="openTask"
-    >
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
       <template #buttons>
         <el-button type="primary" @click="createTask">
           <IconifyIconOffline :icon="AddCircleLine" />
           新建任务
         </el-button>
       </template>
-
-      <template #name="{ row }">
-        <button
-          type="button"
-          class="task-name"
-          :title="row.name"
-          @click="openTask(row)"
+      <template #default="{ size, dynamicColumns, height }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          :class="`pure-table--${size}`"
+          :height="height"
+          :loading="loading"
+          :data="tasks"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+          @row-dblclick="openTask"
         >
-          {{ row.name }}
-        </button>
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #name="{ row }">
+            <button
+              type="button"
+              class="task-name"
+              :title="row.name"
+              @click="openTask(row)"
+            >
+              {{ row.name }}
+            </button>
+          </template>
+          <template #priority="{ row }">
+            <PureTag
+              :type="getMachineTaskPriorityType(row.priority)"
+              effect="light"
+            >
+              {{ formatMachineTaskPriority(row.priority) }}
+            </PureTag>
+          </template>
+          <template #status="{ row }">
+            <PureTag
+              :type="getMachineTaskStatusType(row.status)"
+              effect="light"
+            >
+              {{ formatMachineTaskStatus(row.status) }}
+            </PureTag>
+          </template>
+          <template #operation="{ row }">
+            <div class="table-actions">
+              <el-button
+                v-for="action in getVisibleMachineTaskActions(row.status)"
+                :key="action.action"
+                link
+                :type="action.type"
+                :icon="taskActionIcons[action.action]"
+                :loading="isActionLoading(row.id, action.action)"
+                :disabled="isTaskBusy(row.id)"
+                @click.stop="handleTaskAction(row, action)"
+              >
+                {{ action.label }}
+              </el-button>
+              <span
+                v-if="getVisibleMachineTaskActions(row.status).length"
+                class="action-divider"
+              />
+              <el-button
+                link
+                type="danger"
+                :icon="DeleteBinLine"
+                :loading="pendingTaskId === row.id"
+                :disabled="pendingTaskId !== undefined || isTaskBusy(row.id)"
+                @click.stop="handleDeleteTask(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </pure-table>
       </template>
-
-      <template #priority="{ row }">
-        <PureTag
-          :type="getMachineTaskPriorityType(row.priority)"
-          effect="light"
-        >
-          {{ formatMachineTaskPriority(row.priority) }}
-        </PureTag>
-      </template>
-
-      <template #status="{ row }">
-        <PureTag :type="getMachineTaskStatusType(row.status)" effect="light">
-          {{ formatMachineTaskStatus(row.status) }}
-        </PureTag>
-      </template>
-
-      <template #operation="{ row }">
-        <div class="table-actions">
-          <el-button
-            v-for="action in getVisibleMachineTaskActions(row.status)"
-            :key="action.action"
-            link
-            :type="action.type"
-            :icon="taskActionIcons[action.action]"
-            :loading="isActionLoading(row.id, action.action)"
-            :disabled="isTaskBusy(row.id)"
-            @click.stop="handleTaskAction(row, action)"
-          >
-            {{ action.label }}
-          </el-button>
-          <span
-            v-if="getVisibleMachineTaskActions(row.status).length"
-            class="action-divider"
-          />
-          <el-button
-            link
-            type="danger"
-            :icon="DeleteBinLine"
-            :loading="pendingTaskId === row.id"
-            :disabled="pendingTaskId !== undefined || isTaskBusy(row.id)"
-            @click.stop="handleDeleteTask(row)"
-          >
-            删除
-          </el-button>
-        </div>
-      </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 
 <style scoped lang="scss">
 .machine-task {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+  }
 }
 
 .task-name {

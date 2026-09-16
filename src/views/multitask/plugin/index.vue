@@ -11,7 +11,7 @@ import {
   type MachinePlugin
 } from "@/api/machine";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import { message } from "@/utils/message";
 import {
   formatPluginType,
@@ -488,17 +488,7 @@ watch(
         </el-form-item>
       </PureSearchCard>
 
-      <PureTableCard
-        fill-height
-        row-key="id"
-        :data="plugins"
-        :loading="loading"
-        :columns="columns"
-        :pagination="pagination"
-        @refresh="handleRefresh"
-        @page-size-change="handleSizeChange"
-        @page-current-change="handleCurrentChange"
-      >
+      <PureTableBar :columns="columns" @refresh="handleRefresh">
         <template #buttons>
           <input
             ref="importInputRef"
@@ -537,41 +527,65 @@ watch(
             新增插件
           </el-button>
         </template>
-
-        <template #type="{ row }">{{ formatPluginType(row.type) }}</template>
-        <template #status="{ row }">
-          <PureTag
-            :type="machinePluginStatusMap[row.status]?.type ?? 'info'"
-            effect="light"
+        <template #default="{ size, dynamicColumns, height }">
+          <pure-table
+            row-key="id"
+            stripe
+            table-layout="fixed"
+            show-overflow-tooltip
+            :class="`pure-table--${size}`"
+            :height="height"
+            :loading="loading"
+            :data="plugins"
+            :columns="dynamicColumns"
+            :pagination="pagination"
+            :header-cell-style="{
+              background: 'var(--el-fill-color-light)',
+              color: 'var(--el-text-color-primary)'
+            }"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
           >
-            {{ machinePluginStatusMap[row.status]?.label ?? row.status }}
-          </PureTag>
+            <template #empty>
+              <el-empty :image-size="64" description="暂无数据" />
+            </template>
+            <template #type="{ row }">
+              {{ formatPluginType(row.type) }}
+            </template>
+            <template #status="{ row }">
+              <PureTag
+                :type="machinePluginStatusMap[row.status]?.type ?? 'info'"
+                effect="light"
+              >
+                {{ machinePluginStatusMap[row.status]?.label ?? row.status }}
+              </PureTag>
+            </template>
+            <template #operation="{ row }">
+              <div class="table-actions">
+                <el-button
+                  link
+                  type="primary"
+                  :icon="EditLine"
+                  :disabled="pendingPluginId !== undefined"
+                  @click.stop="openEditPlugin(row.id)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  link
+                  type="danger"
+                  :icon="DeleteBinLine"
+                  :loading="pendingPluginId === row.id"
+                  :disabled="pendingPluginId !== undefined"
+                  @click.stop="handleDeletePlugin(row)"
+                >
+                  删除
+                </el-button>
+              </div>
+            </template>
+          </pure-table>
         </template>
-
-        <template #operation="{ row }">
-          <div class="table-actions">
-            <el-button
-              link
-              type="primary"
-              :icon="EditLine"
-              :disabled="pendingPluginId !== undefined"
-              @click.stop="openEditPlugin(row.id)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              :icon="DeleteBinLine"
-              :loading="pendingPluginId === row.id"
-              :disabled="pendingPluginId !== undefined"
-              @click.stop="handleDeletePlugin(row)"
-            >
-              删除
-            </el-button>
-          </div>
-        </template>
-      </PureTableCard>
+      </PureTableBar>
     </section>
   </div>
 </template>

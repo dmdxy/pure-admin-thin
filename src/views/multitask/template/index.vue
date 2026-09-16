@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import type { MachineTemplate } from "@/api/machine";
 import { workflowPath } from "@/views/workflow/utils/workflowRoute";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import AddCircleLine from "~icons/ri/add-circle-line";
 import DeleteBinLine from "~icons/ri/delete-bin-line";
 import { machineTemplateStatusMap, machineTemplateStatusOptions } from "./data";
@@ -104,80 +104,100 @@ function createTemplate() {
       </el-form-item>
     </PureSearchCard>
 
-    <PureTableCard
-      fill-height
-      row-key="id"
-      :data="templates"
-      :loading="loading"
-      :columns="columns"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-      @row-dblclick="openTemplate"
-    >
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
       <template #buttons>
         <el-button type="primary" @click="createTemplate">
           <IconifyIconOffline :icon="AddCircleLine" />
           新建模板
         </el-button>
       </template>
-
-      <template #name="{ row }">
-        <button
-          type="button"
-          class="template-name"
-          :title="row.name"
-          @click="openTemplate(row)"
+      <template #default="{ size, dynamicColumns, height }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          :class="`pure-table--${size}`"
+          :height="height"
+          :loading="loading"
+          :data="templates"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+          @row-dblclick="openTemplate"
         >
-          {{ row.name }}
-        </button>
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #name="{ row }">
+            <button
+              type="button"
+              class="template-name"
+              :title="row.name"
+              @click="openTemplate(row)"
+            >
+              {{ row.name }}
+            </button>
+          </template>
+          <template #status="{ row }">
+            <PureTag
+              :type="machineTemplateStatusMap[row.status]?.type ?? 'info'"
+              effect="light"
+            >
+              {{ machineTemplateStatusMap[row.status]?.label ?? row.status }}
+            </PureTag>
+          </template>
+          <template #operation="{ row }">
+            <div class="table-actions">
+              <el-button
+                link
+                type="primary"
+                @click.stop="openTemplate(row, 'view')"
+              >
+                详情
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                @click.stop="openTemplate(row, 'edit')"
+              >
+                编辑
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                :icon="DeleteBinLine"
+                :loading="pendingTemplateId === row.id"
+                :disabled="pendingTemplateId !== undefined"
+                @click.stop="handleDeleteTemplate(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </pure-table>
       </template>
-
-      <template #status="{ row }">
-        <PureTag
-          :type="machineTemplateStatusMap[row.status]?.type ?? 'info'"
-          effect="light"
-        >
-          {{ machineTemplateStatusMap[row.status]?.label ?? row.status }}
-        </PureTag>
-      </template>
-
-      <template #operation="{ row }">
-        <div class="table-actions">
-          <el-button
-            link
-            type="primary"
-            @click.stop="openTemplate(row, 'view')"
-          >
-            详情
-          </el-button>
-          <el-button
-            link
-            type="primary"
-            @click.stop="openTemplate(row, 'edit')"
-          >
-            编辑
-          </el-button>
-          <el-button
-            link
-            type="danger"
-            :icon="DeleteBinLine"
-            :loading="pendingTemplateId === row.id"
-            :disabled="pendingTemplateId !== undefined"
-            @click.stop="handleDeleteTemplate(row)"
-          >
-            删除
-          </el-button>
-        </div>
-      </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 
 <style scoped lang="scss">
 .machine-template {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+  }
 }
 
 .template-name {
