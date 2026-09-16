@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import Search from "~icons/ri/search-eye-line";
+import { OFFLINE_ICON_NAMES } from "./offlineIcon";
 
 defineOptions({ name: "OfflineIconSelect" });
 
@@ -13,21 +14,7 @@ withDefaults(
 
 const inputValue = defineModel<string>({ default: "" });
 const filterValue = ref("");
-const iconOptions = [
-  "ep/home-filled",
-  "ri/search-line",
-  "ri/information-line",
-  "ri/dashboard-3-line",
-  "ri/folder-3-line",
-  "ri/cpu-line",
-  "ri/calendar-todo-line",
-  "ri/group-line",
-  "ri/file-list-3-line",
-  "ri/settings-3-line",
-  "ri/mail-line",
-  "ri/table-line",
-  "ri/flow-chart"
-];
+const iconOptions = OFFLINE_ICON_NAMES;
 const filteredIcons = computed(() => {
   const keyword = filterValue.value.trim().toLowerCase();
   return keyword

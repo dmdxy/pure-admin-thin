@@ -24,7 +24,12 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       port: VITE_PORT,
       host: "0.0.0.0",
       // 本地跨域代理 https://cn.vitejs.dev/config/server-options.html#server-proxy
-      proxy: {},
+      proxy: {
+        "/v1": {
+          target: "http://192.168.0.163:9600",
+          changeOrigin: true
+        }
+      },
       // 预热文件以提前转换和缓存结果，降低启动期间的初始页面加载时长并防止转换瀑布
       // Vite 8 / Rolldown 暂不支持 extglob（如 {views,components}），改为显式路径
       // https://cn.vite.dev/guide/migration#advanced

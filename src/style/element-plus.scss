@@ -208,13 +208,19 @@
   overflow: hidden;
 
   > .el-table {
+    --el-table-header-bg-color: var(--el-fill-color-light);
+    --el-table-header-text-color: var(--el-text-color-primary);
+
     flex: 1;
     height: 0 !important;
     min-height: 0;
   }
 
   .el-table__inner-wrapper {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    min-height: 0;
   }
 
   .el-table .el-table__cell {
@@ -222,7 +228,9 @@
     padding-bottom: var(--pure-table-row-pad);
   }
 
-  .el-table__header-wrapper {
+  .el-table__header-wrapper,
+  .el-table__footer-wrapper {
+    flex-shrink: 0;
     overflow-y: hidden !important;
   }
 
@@ -233,8 +241,16 @@
     border-bottom: var(--el-table-border);
   }
 
+  /* 表体由内部 el-scrollbar 滚动，不要在 wrapper 上再开一层 overflow */
   .el-table__body-wrapper {
-    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .el-table__body-wrapper .el-scrollbar__wrap {
+    max-height: 100%;
+    overflow: auto;
   }
 
   .pure-pagination {
@@ -249,6 +265,42 @@
 
   .el-empty {
     padding: 8px 0;
+  }
+}
+
+.pure-table .table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+
+  .el-button {
+    margin-left: 0 !important;
+  }
+
+  .el-button.is-link > span {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .el-button.is-link .el-icon,
+  .el-button.is-link svg {
+    margin: 0;
+  }
+
+  .el-dropdown {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .action-divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 14px;
+    margin: 0;
+    background: var(--el-border-color);
   }
 }
 

@@ -67,12 +67,14 @@ html.dark {
     }
   }
 
-  /* 暗色下弹出层/折叠菜单也跟侧栏同色 */
-  .el-menu--popup,
-  .el-popper .el-menu--vertical,
-  .el-menu--vertical .el-menu--popup,
-  .el-menu--horizontal .el-menu--popup {
+  /* 暗色下弹出层跟侧栏同色，底色只涂 Popper 外壳 */
+  .el-popper.pure-scrollbar {
     background-color: var(--el-bg-color) !important;
+    border-color: var(--el-border-color) !important;
+  }
+
+  .el-menu.el-menu--popup {
+    background-color: transparent !important;
   }
 
   .app-main,

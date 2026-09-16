@@ -127,7 +127,12 @@ defineEmits<{
 }
 
 /* 框架的滚动视图默认 overflow: hidden，会截断页面内的 sticky。 */
-:global(.app-main .el-scrollbar__view:has(.definition-editor-layout)) {
+:global(
+  .app-main
+    .page-scrollbar
+    > .el-scrollbar__wrap
+    > .el-scrollbar__view:has(.definition-editor-layout)
+) {
   overflow: visible !important;
 }
 </style>

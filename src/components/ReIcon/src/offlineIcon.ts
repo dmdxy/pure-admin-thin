@@ -24,6 +24,7 @@ import RiFileList3Line from "~icons/ri/file-list-3-line?raw";
 import RiMailLine from "~icons/ri/mail-line?raw";
 import RiTableLine from "~icons/ri/table-line?raw";
 import RiFlowChart from "~icons/ri/flow-chart?raw";
+import RiShieldFlashLine from "~icons/ri/shield-flash-line?raw";
 
 const icons = [
   // Element Plus Icon: https://github.com/element-plus/element-plus-icons
@@ -46,8 +47,11 @@ const icons = [
   ["ri/file-list-3-line", RiFileList3Line],
   ["ri/mail-line", RiMailLine],
   ["ri/table-line", RiTableLine],
-  ["ri/flow-chart", RiFlowChart]
+  ["ri/flow-chart", RiFlowChart],
+  ["ri/shield-flash-line", RiShieldFlashLine]
 ];
+
+export const OFFLINE_ICON_NAMES = icons.map(([name]) => name as string);
 
 // 本地菜单图标，后端在路由的 icon 中返回对应的图标字符串并且前端在此处使用 addIcon 添加即可渲染菜单图标
 icons.forEach(([name, icon]) => {

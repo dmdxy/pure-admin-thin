@@ -6,7 +6,7 @@ defineOptions({
   name: "Workbench"
 });
 
-const { username, userAvatar } = useNav();
+const { username, userAvatar, handleAvatarError } = useNav();
 const now = ref(new Date());
 
 let clockTimer: number | undefined;
@@ -63,7 +63,12 @@ onBeforeUnmount(() => {
   <div class="workbench">
     <header class="workbench-hero">
       <div class="workbench-hero__main">
-        <img class="workbench-hero__avatar" :src="userAvatar" alt="" />
+        <img
+          class="workbench-hero__avatar"
+          :src="userAvatar"
+          alt=""
+          @error="handleAvatarError"
+        />
         <div class="workbench-hero__copy">
           <span class="workbench-hero__badge">工作台</span>
           <h1 class="workbench-hero__title">

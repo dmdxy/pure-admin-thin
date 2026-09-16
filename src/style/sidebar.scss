@@ -14,9 +14,19 @@
     }
   }
 
-  /* 修复 windows 下双滚动条问题，并禁止弹出层横向滚动 */
+  /* 折叠子弹层：外壳做唯一卡片（底色/边框/阴影），避免内层再叠一层 */
   .el-popper.pure-scrollbar {
     overflow: hidden auto;
+    background: var(--pure-theme-menu-bg) !important;
+    border: 1px solid var(--el-border-color) !important;
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow-light) !important;
+  }
+
+  .el-menu--popup-container {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   /* popper menu 超出内容区可滚动 */
@@ -502,10 +512,8 @@
     }
   }
 
-  /* 折叠/顶部弹出层（挂到 body，与侧栏叶子菜单交互一致） */
-  .el-menu--popup,
-  .el-popper .el-menu--vertical,
-  .el-popper .el-menu--popup {
+  /* 折叠/顶部弹出层：只给 ul.el-menu--popup 一层背景 */
+  .el-menu.el-menu--popup {
     --el-menu-item-height: 40px;
     --el-menu-base-level-padding: 16px;
     --el-menu-hover-bg-color: transparent;
@@ -517,10 +525,12 @@
     gap: $menu-item-gap * 2;
     min-width: 180px !important;
 
-    /* 左右留白放在容器上，避免 width:100% + margin 被裁切 */
+    /* 左右留白放在列表上；底色/描边交给 Popper 外壳，避免双层卡片 */
     padding: 6px !important;
     overflow-x: hidden;
-    background-color: var(--pure-theme-menu-bg) !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 
     .el-menu-item,
     .el-sub-menu__title {

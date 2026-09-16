@@ -28,7 +28,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { logout, onPanel, username, userAvatar } = useNav();
+const { logout, onPanel, username, userAvatar, handleAvatarError } = useNav();
 </script>
 
 <template>
@@ -49,7 +49,7 @@ const { logout, onPanel, username, userAvatar } = useNav();
     </span>
     <el-dropdown v-if="showUser" trigger="click" placement="bottom-end">
       <span class="header-user-btn" :title="username || ''">
-        <img :src="userAvatar" alt="avatar" />
+        <img :src="userAvatar" alt="avatar" @error="handleAvatarError" />
       </span>
       <template #dropdown>
         <el-dropdown-menu class="header-user-menu">

@@ -20,6 +20,7 @@ const {
   loginUsername,
   userRoles,
   userAvatar,
+  handleAvatarError,
   isCollapse
 } = useNav();
 
@@ -146,7 +147,12 @@ onBeforeUnmount(() => {
       @click="toggleMenu"
       @keydown="handleTriggerKeydown"
     >
-      <img :src="userAvatar" class="sidebar-user-avatar" alt="avatar" />
+      <img
+        :src="userAvatar"
+        class="sidebar-user-avatar"
+        alt="avatar"
+        @error="handleAvatarError"
+      />
       <div v-show="!isCollapse" class="sidebar-user-meta">
         <span class="sidebar-user-name">{{ displayName }}</span>
         <span class="sidebar-user-role">{{ roleSummary }}</span>
@@ -171,7 +177,12 @@ onBeforeUnmount(() => {
         @keydown="handleMenuKeydown"
       >
         <div class="sidebar-user-profile" role="presentation">
-          <img :src="userAvatar" class="sidebar-user-profile-avatar" alt="" />
+          <img
+            :src="userAvatar"
+            class="sidebar-user-profile-avatar"
+            alt=""
+            @error="handleAvatarError"
+          />
           <div class="sidebar-user-profile-content">
             <span class="sidebar-user-profile-name">{{ displayName }}</span>
             <span class="sidebar-user-profile-role">{{ roleSummary }}</span>

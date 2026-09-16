@@ -2,7 +2,7 @@
 import { PureTag } from "@/components/RePureTag";
 import { computed, reactive, ref, watch } from "vue";
 import { message } from "@/utils/message";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import { PureSearchCard } from "@/components/RePureSearchCard";
 import AddLine from "~icons/ri/add-line";
 
@@ -225,36 +225,60 @@ function handleCurrentChange(currentPage: number) {
       </el-form-item>
     </PureSearchCard>
 
-    <PureTableCard
-      :data="tableData"
-      :columns="columns"
-      :loading="loading"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-    >
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
       <template #buttons>
         <el-button type="primary" @click="handleAdd">
           <IconifyIconOffline :icon="AddLine" />
           新增用户
         </el-button>
       </template>
-      <template #status="{ row }">
-        <PureTag
-          :type="row.status === 'enabled' ? 'success' : 'info'"
-          effect="light"
+      <template #default="{ size, dynamicColumns, height }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          :class="`pure-table--${size}`"
+          :height="height"
+          :loading="loading"
+          :data="tableData"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
         >
-          {{ row.status === "enabled" ? "正常" : "停用" }}
-        </PureTag>
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #status="{ row }">
+            <PureTag
+              :type="row.status === 'enabled' ? 'success' : 'info'"
+              effect="light"
+            >
+              {{ row.status === "enabled" ? "正常" : "停用" }}
+            </PureTag>
+          </template>
+        </pure-table>
       </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .table-components-demo {
   box-sizing: border-box;
-  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+  }
 }
 </style>
