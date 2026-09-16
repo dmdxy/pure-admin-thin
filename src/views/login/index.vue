@@ -44,8 +44,8 @@ const version = getConfig().Version;
 const userStore = useUserStoreHook();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123",
+  username: "",
+  password: "",
   remember: userStore.isRemembered
 });
 
@@ -55,14 +55,13 @@ const onLogin = async (formEl: FormInstance | undefined) => {
     if (valid) {
       loading.value = true;
       userStore.SET_ISREMEMBERED(ruleForm.remember);
-      // 暂沿用当前 mock 登录，后续再接真实接口
       userStore
         .loginByUsername({
           username: ruleForm.username,
           password: ruleForm.password
         })
         .then(res => {
-          if (res.success) {
+          if (res.code === 0) {
             return initRouter().then(() => {
               disabled.value = true;
               return router
@@ -73,7 +72,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
                 .finally(() => (disabled.value = false));
             });
           } else {
-            message(t("login.pureLoginFail"), { type: "error" });
+            message(res.message || t("login.pureLoginFail"), { type: "error" });
           }
         })
         .catch(error => {
