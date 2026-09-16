@@ -8,7 +8,7 @@ import { getUserColumns, type UserColumn } from "@/api/user";
 import { message } from "@/utils/message";
 import { workflowPath } from "@/views/workflow/utils/workflowRoute";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import AddCircleLine from "~icons/ri/add-circle-line";
 import DeleteBinLine from "~icons/ri/delete-bin-line";
 import FileCopyLine from "~icons/ri/file-copy-line";
@@ -175,17 +175,7 @@ function copyProjectCode(code: string) {
       </el-form-item>
     </PureSearchCard>
 
-    <PureTableCard
-      fill-height
-      :data="projects"
-      :columns="columns"
-      :loading="loading"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-      @row-dblclick="openProject"
-    >
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
       <template #buttons>
         <el-button
           type="danger"
@@ -201,59 +191,92 @@ function copyProjectCode(code: string) {
           新建项目
         </el-button>
       </template>
-
-      <template #code="{ row }">
-        <div class="project-id">
-          <span :title="row.code">{{ row.code }}</span>
-          <el-button
-            link
-            :icon="FileCopyLine"
-            title="复制工程编号"
-            @click.stop="copyProjectCode(row.code)"
-          />
-        </div>
-      </template>
-
-      <template #name="{ row }">
-        <button
-          type="button"
-          class="project-name"
-          :title="row.name"
-          @click="openProject(row)"
+      <template #default="{ size, dynamicColumns, height }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          :class="`pure-table--${size}`"
+          :height="height"
+          :loading="loading"
+          :data="projects"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+          @row-dblclick="openProject"
         >
-          {{ row.name }}
-        </button>
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #code="{ row }">
+            <div class="project-id">
+              <span :title="row.code">{{ row.code }}</span>
+              <el-button
+                link
+                :icon="FileCopyLine"
+                title="复制工程编号"
+                @click.stop="copyProjectCode(row.code)"
+              />
+            </div>
+          </template>
+          <template #name="{ row }">
+            <button
+              type="button"
+              class="project-name"
+              :title="row.name"
+              @click="openProject(row)"
+            >
+              {{ row.name }}
+            </button>
+          </template>
+          <template #status="{ row }">
+            <PureTag
+              :type="statusMap[row.status]?.type ?? 'info'"
+              effect="light"
+            >
+              {{ statusMap[row.status]?.label ?? row.status }}
+            </PureTag>
+          </template>
+          <template #operation="{ row }">
+            <div class="table-actions">
+              <el-button
+                v-if="row.status !== 'deleted'"
+                link
+                type="danger"
+                :icon="DeleteBinLine"
+                :loading="pendingProjectId === row.id"
+                :disabled="pendingProjectId !== undefined"
+                @click.stop="handleProjectAction(row, 'deleted')"
+                @dblclick.stop
+              >
+                回收
+              </el-button>
+            </div>
+          </template>
+        </pure-table>
       </template>
-
-      <template #status="{ row }">
-        <PureTag :type="statusMap[row.status]?.type ?? 'info'" effect="light">
-          {{ statusMap[row.status]?.label ?? row.status }}
-        </PureTag>
-      </template>
-
-      <template #operation="{ row }">
-        <div class="table-actions">
-          <el-button
-            v-if="row.status !== 'deleted'"
-            link
-            type="danger"
-            :icon="DeleteBinLine"
-            :loading="pendingProjectId === row.id"
-            :disabled="pendingProjectId !== undefined"
-            @click.stop="handleProjectAction(row, 'deleted')"
-            @dblclick.stop
-          >
-            回收
-          </el-button>
-        </div>
-      </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 
 <style scoped lang="scss">
 .project-engineering {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+  }
 }
 
 .project-name {

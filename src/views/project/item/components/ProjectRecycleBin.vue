@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import DeleteBinLine from "~icons/ri/delete-bin-line";
 import ArrowGoBackLine from "~icons/ri/arrow-go-back-line";
 import { useProjectPage } from "../hooks/useProjectPage";
@@ -40,40 +40,54 @@ defineExpose({ isBusy });
 
 <template>
   <div class="project-recycle-bin">
-    <PureTableCard
-      row-key="id"
-      max-height="50vh"
-      :data="projects"
-      :columns="columns"
-      :loading="loading"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-    >
-      <template #operation="{ row }">
-        <div class="table-actions">
-          <el-button
-            link
-            type="primary"
-            :icon="ArrowGoBackLine"
-            :disabled="isBusy"
-            @click="handleProjectAction(row, 'restore')"
-          >
-            恢复
-          </el-button>
-          <el-button
-            link
-            type="danger"
-            :icon="DeleteBinLine"
-            :disabled="isBusy"
-            @click="handleProjectAction(row, 'delete')"
-          >
-            删除
-          </el-button>
-        </div>
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
+      <template #default="{ size, dynamicColumns }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          max-height="50vh"
+          :class="`pure-table--${size}`"
+          :loading="loading"
+          :data="projects"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+        >
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #operation="{ row }">
+            <div class="table-actions">
+              <el-button
+                link
+                type="primary"
+                :icon="ArrowGoBackLine"
+                :disabled="isBusy"
+                @click="handleProjectAction(row, 'restore')"
+              >
+                恢复
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                :icon="DeleteBinLine"
+                :disabled="isBusy"
+                @click="handleProjectAction(row, 'delete')"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </pure-table>
       </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 

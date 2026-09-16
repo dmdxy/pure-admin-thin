@@ -14,7 +14,7 @@ import { OfflineIconSelect } from "@/components/ReIcon";
 import { normalizeStoredParameters } from "@/components/ParameterSchemaEditor";
 import type { ParameterDefinition } from "@/types/parameter-schema";
 import { message } from "@/utils/message";
-import { toFieldParameter } from "@/views/system/field/adapters";
+import { toFieldParameter } from "@/views/permission/field/adapters";
 import {
   processGroupStatusOptions,
   processTypeDefaultColorMap,

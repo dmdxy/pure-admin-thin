@@ -7,7 +7,7 @@ import {
   type ProjectProcess
 } from "@/api/project";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import { PureTag } from "@/components/RePureTag";
 import { message } from "@/utils/message";
 import {
@@ -309,68 +309,84 @@ async function handleDeleteProcess(row: ProjectProcess) {
           />
         </el-form-item>
       </PureSearchCard>
-      <PureTableCard
-        fill-height
-        row-key="id"
-        :data="processes"
-        :loading="loading"
-        :columns="columns"
-        :pagination="pagination"
-        @refresh="handleRefresh"
-        @page-size-change="handleSizeChange"
-        @page-current-change="handleCurrentChange"
-      >
+      <PureTableBar :columns="columns" @refresh="handleRefresh">
         <template #buttons>
           <el-button type="primary" @click="openCreateProcess">
             <IconifyIconOffline :icon="AddCircleLine" />
             新增工序
           </el-button>
         </template>
-        <template #groupNames="{ row }">
-          {{ row.groupNames?.join("、") || "—" }}
-        </template>
-        <template #type="{ row }">{{ formatProcessType(row.type) }}</template>
-        <template #status="{ row }">
-          <PureTag
-            :type="row.status === 'off' ? 'info' : 'success'"
-            effect="light"
+        <template #default="{ size, dynamicColumns, height }">
+          <pure-table
+            row-key="id"
+            stripe
+            table-layout="fixed"
+            show-overflow-tooltip
+            :class="`pure-table--${size}`"
+            :height="height"
+            :loading="loading"
+            :data="processes"
+            :columns="dynamicColumns"
+            :pagination="pagination"
+            :header-cell-style="{
+              background: 'var(--el-fill-color-light)',
+              color: 'var(--el-text-color-primary)'
+            }"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
           >
-            {{ row.status === "off" ? "停用" : "正常" }}
-          </PureTag>
+            <template #empty>
+              <el-empty :image-size="64" description="暂无数据" />
+            </template>
+            <template #groupNames="{ row }">
+              {{ row.groupNames?.join("、") || "—" }}
+            </template>
+            <template #type="{ row }">
+              {{ formatProcessType(row.type) }}
+            </template>
+            <template #status="{ row }">
+              <PureTag
+                :type="row.status === 'off' ? 'info' : 'success'"
+                effect="light"
+              >
+                {{ row.status === "off" ? "停用" : "正常" }}
+              </PureTag>
+            </template>
+            <template #operation="{ row }">
+              <div class="table-actions">
+                <el-button
+                  link
+                  type="primary"
+                  :icon="EditLine"
+                  :disabled="pendingProcessId !== undefined"
+                  @click.stop="handleEditProcess(row)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  link
+                  type="danger"
+                  :icon="DeleteBinLine"
+                  :loading="pendingProcessId === row.id"
+                  :disabled="pendingProcessId !== undefined"
+                  @click.stop="handleDeleteProcess(row)"
+                >
+                  删除
+                </el-button>
+                <el-button
+                  link
+                  type="primary"
+                  :icon="EyeLine"
+                  :disabled="pendingProcessId !== undefined"
+                  @click.stop="handleViewProcess(row)"
+                >
+                  详情
+                </el-button>
+              </div>
+            </template>
+          </pure-table>
         </template>
-        <template #operation="{ row }">
-          <div class="table-actions">
-            <el-button
-              link
-              type="primary"
-              :icon="EditLine"
-              :disabled="pendingProcessId !== undefined"
-              @click.stop="handleEditProcess(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              :icon="DeleteBinLine"
-              :loading="pendingProcessId === row.id"
-              :disabled="pendingProcessId !== undefined"
-              @click.stop="handleDeleteProcess(row)"
-            >
-              删除
-            </el-button>
-            <el-button
-              link
-              type="primary"
-              :icon="EyeLine"
-              :disabled="pendingProcessId !== undefined"
-              @click.stop="handleViewProcess(row)"
-            >
-              详情
-            </el-button>
-          </div>
-        </template>
-      </PureTableCard>
+      </PureTableBar>
     </section>
   </div>
 </template>
@@ -381,6 +397,9 @@ async function handleDeleteProcess(row: ProjectProcess) {
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 20px;
   align-items: stretch;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .process-groups {
@@ -594,7 +613,16 @@ async function handleDeleteProcess(row: ProjectProcess) {
 }
 
 .process-main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+    margin-bottom: var(--pure-page-gap);
+  }
 }
 
 @media (width <= 900px) {

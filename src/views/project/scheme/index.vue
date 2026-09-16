@@ -2,7 +2,7 @@
 import { PureTag } from "@/components/RePureTag";
 import { useRouter } from "vue-router";
 import { PureSearchCard } from "@/components/RePureSearchCard";
-import { PureTableCard } from "@/components/RePureTableCard";
+import { PureTableBar } from "@/components/RePureTableBar";
 import { workflowPath } from "@/views/workflow/utils/workflowRoute";
 import AddCircleLine from "~icons/ri/add-circle-line";
 import { useSchemePage } from "./hooks/useSchemePage";
@@ -74,47 +74,81 @@ function openScheme(
         />
       </el-form-item>
     </PureSearchCard>
-    <PureTableCard
-      fill-height
-      row-key="id"
-      :data="schemes"
-      :loading="loading"
-      :columns="columns"
-      :pagination="pagination"
-      @refresh="handleRefresh"
-      @page-size-change="handleSizeChange"
-      @page-current-change="handleCurrentChange"
-      @row-dblclick="
-        (row: { id: number; name: string }) => openScheme(row, 'view')
-      "
-    >
+    <PureTableBar :columns="columns" @refresh="handleRefresh">
       <template #buttons>
         <el-button type="primary" @click="createScheme">
           <IconifyIconOffline :icon="AddCircleLine" />
           新建方案
         </el-button>
       </template>
-      <template #status="{ row }">
-        <PureTag :type="statusMap[row.status]?.type ?? 'info'" effect="light">
-          {{ statusMap[row.status]?.label ?? (row.status || "—") }}
-        </PureTag>
+      <template #default="{ size, dynamicColumns, height }">
+        <pure-table
+          row-key="id"
+          stripe
+          table-layout="fixed"
+          show-overflow-tooltip
+          :class="`pure-table--${size}`"
+          :height="height"
+          :loading="loading"
+          :data="schemes"
+          :columns="dynamicColumns"
+          :pagination="pagination"
+          :header-cell-style="{
+            background: 'var(--el-fill-color-light)',
+            color: 'var(--el-text-color-primary)'
+          }"
+          @page-size-change="handleSizeChange"
+          @page-current-change="handleCurrentChange"
+          @row-dblclick="
+            (row: { id: number; name: string }) => openScheme(row, 'view')
+          "
+        >
+          <template #empty>
+            <el-empty :image-size="64" description="暂无数据" />
+          </template>
+          <template #status="{ row }">
+            <PureTag
+              :type="statusMap[row.status]?.type ?? 'info'"
+              effect="light"
+            >
+              {{ statusMap[row.status]?.label ?? (row.status || "—") }}
+            </PureTag>
+          </template>
+          <template #operation="{ row }">
+            <div class="table-actions">
+              <el-button
+                link
+                type="primary"
+                @click.stop="openScheme(row, 'view')"
+              >
+                详情
+              </el-button>
+              <el-button
+                link
+                type="primary"
+                @click.stop="openScheme(row, 'edit')"
+              >
+                编辑
+              </el-button>
+            </div>
+          </template>
+        </pure-table>
       </template>
-      <template #operation="{ row }">
-        <div class="table-actions">
-          <el-button link type="primary" @click.stop="openScheme(row, 'view')">
-            详情
-          </el-button>
-          <el-button link type="primary" @click.stop="openScheme(row, 'edit')">
-            编辑
-          </el-button>
-        </div>
-      </template>
-    </PureTableCard>
+    </PureTableBar>
   </div>
 </template>
 
 <style scoped lang="scss">
 .project-scheme {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  :deep(.pure-search-card) {
+    flex-shrink: 0;
+  }
 }
 </style>
