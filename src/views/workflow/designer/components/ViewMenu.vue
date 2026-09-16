@@ -8,7 +8,7 @@ import {
 import CheckIcon from "~icons/ep/check";
 
 const preferences = defineModel<ViewPreferences>({ required: true });
-defineProps<{
+const props = defineProps<{
   libraryAvailable: boolean;
   libraryShown: boolean;
   inspectorShown: boolean;
@@ -46,6 +46,22 @@ const gridBackground = computed({
     if (value !== "none") preferences.value.gridType = value;
   }
 });
+const gridLabel = computed(
+  () => gridStyles.find(item => item.value === gridBackground.value)?.label
+);
+const edgeLabel = computed(
+  () =>
+    edgeStyles.find(item => item.value === preferences.value.edgeStyle)?.label
+);
+const nodeLabel = computed(
+  () =>
+    nodeStyles.find(item => item.value === preferences.value.nodeDisplay)?.label
+);
+const appearanceLabel = computed(
+  () =>
+    appearances.find(item => item.value === props.appearance)?.label ??
+    "跟随系统"
+);
 
 function select(command: string) {
   const grid = gridStyles.find(item => `grid:${item.value}` === command);
@@ -87,7 +103,7 @@ function select(command: string) {
     v-model:visible="visible"
     trigger="click"
     placement="bottom-end"
-    :width="264"
+    :width="252"
     :show-arrow="false"
     popper-class="gc-view-popover"
   >
@@ -106,180 +122,227 @@ function select(command: string) {
         />
       </button>
     </template>
-    <el-menu
-      class="gc-view-menu"
-      collapse
-      :unique-opened="true"
-      :collapse-transition="false"
-      @select="select"
-    >
-      <el-menu-item-group title="面板">
-        <el-menu-item
-          index="library"
+
+    <div class="gc-view-menu" role="menu">
+      <div class="gc-view-group">
+        <div class="gc-view-group__title">面板</div>
+        <button
+          type="button"
+          class="gc-view-item"
+          role="menuitemcheckbox"
           :disabled="!libraryAvailable"
           :aria-checked="libraryAvailable && libraryShown"
-          role="menuitemcheckbox"
+          @click="select('library')"
         >
-          <span class="gc-view-check"
-            ><IconifyIconOffline
+          <span class="gc-view-check">
+            <IconifyIconOffline
               v-if="libraryAvailable && libraryShown"
-              :icon="CheckIcon" /></span
-          >左侧面板
-        </el-menu-item>
-        <el-menu-item
-          index="inspector"
+              :icon="CheckIcon"
+            />
+          </span>
+          <span class="gc-view-label">左侧面板</span>
+        </button>
+        <button
+          type="button"
+          class="gc-view-item"
+          role="menuitemcheckbox"
           :aria-checked="inspectorShown"
-          role="menuitemcheckbox"
+          @click="select('inspector')"
         >
-          <span class="gc-view-check"
-            ><IconifyIconOffline
-              v-if="inspectorShown"
-              :icon="CheckIcon" /></span
-          >属性面板
-        </el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="画布">
-        <el-menu-item
-          index="toolbar"
+          <span class="gc-view-check">
+            <IconifyIconOffline v-if="inspectorShown" :icon="CheckIcon" />
+          </span>
+          <span class="gc-view-label">属性面板</span>
+        </button>
+      </div>
+
+      <div class="gc-view-group">
+        <div class="gc-view-group__title">画布</div>
+        <button
+          type="button"
+          class="gc-view-item"
+          role="menuitemcheckbox"
           :aria-checked="preferences.toolbar"
-          role="menuitemcheckbox"
+          @click="select('toolbar')"
         >
-          <span class="gc-view-check"
-            ><IconifyIconOffline
-              v-if="preferences.toolbar"
-              :icon="CheckIcon" /></span
-          >工具栏
-        </el-menu-item>
-        <el-sub-menu
-          index="grid-style"
-          teleported
-          popper-class="gc-view-submenu"
-        >
-          <template #title>
-            <span class="gc-view-check" />画布背景<span class="gc-view-value">{{
-              gridStyles.find(item => item.value === gridBackground)?.label
-            }}</span>
-          </template>
-          <el-menu-item
-            v-for="item in gridStyles"
-            :key="item.value"
-            :index="`grid:${item.value}`"
-            :aria-checked="gridBackground === item.value"
-            role="menuitemradio"
-          >
-            <span class="gc-view-check"
-              ><IconifyIconOffline
-                v-if="gridBackground === item.value"
-                :icon="CheckIcon" /></span
-            >{{ item.label }}
-          </el-menu-item>
-        </el-sub-menu>
-        <el-menu-item
+          <span class="gc-view-check">
+            <IconifyIconOffline v-if="preferences.toolbar" :icon="CheckIcon" />
+          </span>
+          <span class="gc-view-label">工具栏</span>
+        </button>
+        <div class="gc-view-sub">
+          <button type="button" class="gc-view-item" role="menuitem">
+            <span class="gc-view-check" />
+            <span class="gc-view-label">画布背景</span>
+            <span class="gc-view-value">{{ gridLabel }}</span>
+            <component
+              :is="workflowIcon('arrow-right')"
+              class="gc-view-arrow"
+            />
+          </button>
+          <div class="gc-view-flyout" role="menu">
+            <button
+              v-for="item in gridStyles"
+              :key="item.value"
+              type="button"
+              class="gc-view-item"
+              role="menuitemradio"
+              :aria-checked="gridBackground === item.value"
+              @click="select(`grid:${item.value}`)"
+            >
+              <span class="gc-view-check">
+                <IconifyIconOffline
+                  v-if="gridBackground === item.value"
+                  :icon="CheckIcon"
+                />
+              </span>
+              <span class="gc-view-label">{{ item.label }}</span>
+            </button>
+          </div>
+        </div>
+        <button
           v-for="option in canvasOptions"
           :key="option.key"
-          :index="`canvas:${option.key}`"
-          :aria-checked="preferences[option.key]"
+          type="button"
+          class="gc-view-item"
           role="menuitemcheckbox"
+          :aria-checked="preferences[option.key]"
+          @click="select(`canvas:${option.key}`)"
         >
-          <span class="gc-view-check"
-            ><IconifyIconOffline
+          <span class="gc-view-check">
+            <IconifyIconOffline
               v-if="preferences[option.key]"
-              :icon="CheckIcon" /></span
-          >{{ option.label }}
-        </el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="显示">
-        <el-sub-menu
-          index="edge-style"
-          teleported
-          popper-class="gc-view-submenu"
-        >
-          <template #title
-            ><span class="gc-view-check" />连线样式<span
-              class="gc-view-value"
-              >{{
-                edgeStyles.find(item => item.value === preferences.edgeStyle)
-                  ?.label
-              }}</span
-            ></template
-          >
-          <el-menu-item
-            v-for="item in edgeStyles"
+              :icon="CheckIcon"
+            />
+          </span>
+          <span class="gc-view-label">{{ option.label }}</span>
+        </button>
+      </div>
+
+      <div class="gc-view-group">
+        <div class="gc-view-group__title">显示</div>
+        <div class="gc-view-sub">
+          <button type="button" class="gc-view-item" role="menuitem">
+            <span class="gc-view-check" />
+            <span class="gc-view-label">连线样式</span>
+            <span class="gc-view-value">{{ edgeLabel }}</span>
+            <component
+              :is="workflowIcon('arrow-right')"
+              class="gc-view-arrow"
+            />
+          </button>
+          <div class="gc-view-flyout" role="menu">
+            <button
+              v-for="item in edgeStyles"
+              :key="item.value"
+              type="button"
+              class="gc-view-item"
+              role="menuitemradio"
+              :aria-checked="preferences.edgeStyle === item.value"
+              @click="select(`edge:${item.value}`)"
+            >
+              <span class="gc-view-check">
+                <IconifyIconOffline
+                  v-if="preferences.edgeStyle === item.value"
+                  :icon="CheckIcon"
+                />
+              </span>
+              <span class="gc-view-label">{{ item.label }}</span>
+            </button>
+          </div>
+        </div>
+        <div class="gc-view-sub">
+          <button type="button" class="gc-view-item" role="menuitem">
+            <span class="gc-view-check" />
+            <span class="gc-view-label">节点显示</span>
+            <span class="gc-view-value">{{ nodeLabel }}</span>
+            <component
+              :is="workflowIcon('arrow-right')"
+              class="gc-view-arrow"
+            />
+          </button>
+          <div class="gc-view-flyout" role="menu">
+            <button
+              v-for="item in nodeStyles"
+              :key="item.value"
+              type="button"
+              class="gc-view-item"
+              role="menuitemradio"
+              :aria-checked="preferences.nodeDisplay === item.value"
+              @click="select(`node:${item.value}`)"
+            >
+              <span class="gc-view-check">
+                <IconifyIconOffline
+                  v-if="preferences.nodeDisplay === item.value"
+                  :icon="CheckIcon"
+                />
+              </span>
+              <span class="gc-view-label">{{ item.label }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gc-view-separator" role="separator" />
+      <button
+        type="button"
+        class="gc-view-item"
+        role="menuitem"
+        @click="select('fit')"
+      >
+        <span class="gc-view-check" />
+        <span class="gc-view-label">适应画布</span>
+      </button>
+      <button
+        type="button"
+        class="gc-view-item"
+        role="menuitem"
+        @click="select('zoom100')"
+      >
+        <span class="gc-view-check" />
+        <span class="gc-view-label">重置缩放</span>
+      </button>
+
+      <div class="gc-view-separator" role="separator" />
+      <div class="gc-view-sub">
+        <button type="button" class="gc-view-item" role="menuitem">
+          <span class="gc-view-check" />
+          <span class="gc-view-label">外观</span>
+          <span class="gc-view-value">{{ appearanceLabel }}</span>
+          <component :is="workflowIcon('arrow-right')" class="gc-view-arrow" />
+        </button>
+        <div class="gc-view-flyout" role="menu">
+          <button
+            v-for="item in appearances"
             :key="item.value"
-            :index="`edge:${item.value}`"
-            :aria-checked="preferences.edgeStyle === item.value"
+            type="button"
+            class="gc-view-item"
             role="menuitemradio"
+            :aria-checked="appearance === item.value"
+            @click="select(item.value)"
           >
-            <span class="gc-view-check"
-              ><IconifyIconOffline
-                v-if="preferences.edgeStyle === item.value"
-                :icon="CheckIcon" /></span
-            >{{ item.label }}
-          </el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu
-          index="node-display"
-          teleported
-          popper-class="gc-view-submenu"
-        >
-          <template #title
-            ><span class="gc-view-check" />节点显示<span
-              class="gc-view-value"
-              >{{
-                nodeStyles.find(item => item.value === preferences.nodeDisplay)
-                  ?.label
-              }}</span
-            ></template
-          >
-          <el-menu-item
-            v-for="item in nodeStyles"
-            :key="item.value"
-            :index="`node:${item.value}`"
-            :aria-checked="preferences.nodeDisplay === item.value"
-            role="menuitemradio"
-          >
-            <span class="gc-view-check"
-              ><IconifyIconOffline
-                v-if="preferences.nodeDisplay === item.value"
-                :icon="CheckIcon" /></span
-            >{{ item.label }}
-          </el-menu-item>
-        </el-sub-menu>
-      </el-menu-item-group>
-      <li class="gc-view-separator" role="separator" />
-      <el-menu-item index="fit"
-        ><span class="gc-view-check" />适应画布</el-menu-item
+            <span class="gc-view-check">
+              <IconifyIconOffline
+                v-if="appearance === item.value"
+                :icon="CheckIcon"
+              />
+            </span>
+            <span class="gc-view-label">{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="gc-view-separator" role="separator" />
+      <button
+        type="button"
+        class="gc-view-item"
+        role="menuitem"
+        @click="select('settings')"
       >
-      <el-menu-item index="zoom100"
-        ><span class="gc-view-check" />重置缩放</el-menu-item
-      >
-      <li class="gc-view-separator" role="separator" />
-      <el-sub-menu index="appearance" teleported popper-class="gc-view-submenu">
-        <template #title
-          ><span class="gc-view-check" />外观<span class="gc-view-value">{{
-            appearances.find(item => item.value === appearance)?.label ??
-            "跟随系统"
-          }}</span></template
-        >
-        <el-menu-item
-          v-for="item in appearances"
-          :key="item.value"
-          :index="item.value"
-          :aria-checked="appearance === item.value"
-          role="menuitemradio"
-        >
-          <span class="gc-view-check"
-            ><IconifyIconOffline
-              v-if="appearance === item.value"
-              :icon="CheckIcon" /></span
-          >{{ item.label }}
-        </el-menu-item>
-      </el-sub-menu>
-      <li class="gc-view-separator" role="separator" />
-      <el-menu-item index="settings"
-        ><span class="gc-view-check" />编辑器设置…</el-menu-item
-      >
-    </el-menu>
+        <span class="gc-view-check" />
+        <span class="gc-view-label">编辑器设置…</span>
+      </button>
+    </div>
   </el-popover>
 
   <el-dialog
@@ -288,7 +351,7 @@ function select(command: string) {
     width="min(440px, calc(100vw - 32px))"
     append-to-body
   >
-    <el-form label-width="110px">
+    <el-form class="gc-view-settings" label-width="110px">
       <el-form-item label="画布背景">
         <el-radio-group v-model="gridBackground">
           <el-radio-button
@@ -299,25 +362,26 @@ function select(command: string) {
           >
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="背景间距"
-        ><el-input-number
+      <el-form-item label="背景间距">
+        <el-input-number
           v-model="preferences.gridSize"
           :min="16"
           :max="128"
           :step="8"
           :value-on-clear="64"
         />
-        <span class="gc-view-unit">px</span></el-form-item
-      >
-      <el-form-item label="对齐辅助线"
-        ><el-switch v-model="preferences.snapline"
-      /></el-form-item>
+        <span class="gc-view-unit">px</span>
+      </el-form-item>
+      <el-form-item label="对齐辅助线">
+        <el-switch v-model="preferences.snapline" />
+      </el-form-item>
       <el-form-item
         v-for="option in canvasOptions"
         :key="option.key"
         :label="option.label"
-        ><el-switch v-model="preferences[option.key]"
-      /></el-form-item>
+      >
+        <el-switch v-model="preferences[option.key]" />
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="preferences = { ...defaultViewPreferences }"
@@ -332,93 +396,56 @@ function select(command: string) {
 
 <style lang="scss">
 .el-popover.el-popper.gc-view-popover {
-  padding: 6px;
+  padding: 4px;
+  overflow: visible !important;
   border-radius: var(--pure-radius);
 }
 
-// 限定弹层作用域，避免首次加载时被全局侧栏菜单样式覆盖。
-.el-popper.gc-view-popover .gc-view-menu,
-.el-popper.gc-view-submenu .el-menu {
-  --el-menu-item-height: 32px;
-  --el-menu-sub-item-height: 32px;
-  --el-menu-base-level-padding: 8px;
-  --el-menu-hover-bg-color: var(--el-fill-color-light);
-  --el-menu-bg-color: var(--el-bg-color-overlay);
-  --el-menu-text-color: var(--el-text-color-regular);
-  --el-menu-active-color: var(--el-text-color-regular);
-
-  border: 0;
-
-  .el-menu-item,
-  .el-sub-menu__title {
-    height: var(--el-menu-item-height);
-    padding-right: 28px;
-    font-size: 13px;
-    line-height: var(--el-menu-item-height);
-    border-radius: var(--pure-radius);
-
-    // 侧栏用伪元素绘制悬浮、选中背景，会盖住此处未包裹的文本节点。
-    &::before,
-    &::after {
-      display: none;
-    }
-
-    &:hover {
-      color: var(--el-color-primary) !important;
-      background: var(--el-fill-color-light) !important;
-    }
-  }
-
-  .el-menu-item-group__title {
-    padding: 8px 10px 4px;
-    font-size: 11px;
-    line-height: 18px;
-    color: var(--el-text-color-secondary);
-  }
-
-  &.el-menu--popup {
-    min-width: 136px;
-    padding: 5px;
-    border-radius: var(--pure-radius);
-  }
-
-  .el-sub-menu__icon-arrow {
-    right: 8px;
-  }
+.gc-view-menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-// 保留侧向子菜单；优先级须高于分组折叠菜单的隐藏文字、箭头规则。
-.gc-view-popover .gc-view-menu.el-menu--collapse {
+.gc-view-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.gc-view-group__title {
+  padding: 6px 10px 2px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--el-text-color-secondary);
+}
+
+.gc-view-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   width: 100%;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
+  height: 32px;
+  padding: 0 8px 0 4px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 32px;
+  color: var(--el-text-color-regular);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--pure-radius);
 
-  .el-menu-item > span,
-  .el-sub-menu > .el-sub-menu__title > span {
-    display: inline-flex;
-    visibility: visible;
-    width: auto;
-    height: auto;
-    overflow: visible;
+  &:hover,
+  &:focus-visible {
+    color: var(--el-color-primary);
+    outline: none;
+    background: var(--el-fill-color-light);
   }
 
-  .el-menu-item > .gc-view-check,
-  .el-sub-menu > .el-sub-menu__title > .gc-view-check {
-    width: 24px;
-  }
-
-  .el-sub-menu > .el-sub-menu__title .el-sub-menu__icon-arrow {
-    top: 0;
-    right: 8px;
-    bottom: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    margin: auto 0;
-    font-size: 14px;
-    line-height: 1;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 }
 
@@ -426,21 +453,83 @@ function select(command: string) {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  width: 24px;
-  font-size: 15px;
+  justify-content: center;
+  width: 22px;
+  height: 16px;
+  font-size: 14px;
   color: var(--el-color-primary);
 }
 
+.gc-view-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .gc-view-value {
+  padding-left: 12px;
   margin-left: auto;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+.gc-view-arrow {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  color: var(--el-text-color-placeholder);
+}
+
+.gc-view-sub {
+  position: relative;
+
+  &:hover > .gc-view-item,
+  &:focus-within > .gc-view-item {
+    color: var(--el-color-primary);
+    background: var(--el-fill-color-light);
+  }
+
+  &:hover > .gc-view-flyout,
+  &:focus-within > .gc-view-flyout {
+    display: block;
+  }
+}
+
+.gc-view-flyout {
+  position: absolute;
+  top: -4px;
+  right: calc(100% + 6px);
+  z-index: 2;
+  display: none;
+  min-width: 128px;
+  padding: 4px;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--pure-radius);
+  box-shadow: var(--el-box-shadow-light);
+
+  &::after {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    width: 8px;
+    height: 100%;
+    content: "";
+  }
 }
 
 .gc-view-separator {
   height: 1px;
-  margin: 5px 6px;
+  margin: 4px 6px;
   background: var(--el-border-color-lighter);
+}
+
+.gc-view-settings .el-form-item__content {
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .gc-view-unit {
